@@ -166,7 +166,7 @@ public final class WebServer {
         server.setExecutor(executor);
         server.createContext("/", this::handle);
         try {
-            if (tls != null && tls.isSelfSigned() && current.packPort() > 0) {
+            if (tls != null && tls.isSelfSigned() && current.packPort() > 0 && pack != null) {
                 packServer = HttpServer.create(address(current.packPort()), 0);
                 packServer.setExecutor(executor);
                 packServer.createContext("/", this::handlePack);

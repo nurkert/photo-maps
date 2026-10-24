@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1 (2026-10-24)
+
+- The resource pack now comes from the GitHub release, like PorticleGun's. Before, it came from the plugin's own web
+  server, which players often could not reach (internal address, closed port 8101); because Minecraft applies a
+  server's packs together, that also held back the textures of other plugins such as PorticleGun.
+- The console names players whose game could not load the pack, with the reason.
+- Port 8101 is only opened by development builds.
+
 ## 1.0.0 (2026-10-24)
 
 The first release.

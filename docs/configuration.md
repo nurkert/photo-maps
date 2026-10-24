@@ -18,7 +18,7 @@ Everything is in `plugins/PhotoMaps/config.yml`. Apply changes with `/photomaps 
 | `web.https.private-key` | empty | PEM private key, e.g. `privkey.pem` |
 | `web.https.keystore` | empty | PKCS#12 key store instead of PEM files |
 | `web.https.keystore-password` | empty | its password |
-| `web.https.pack-port` | `8101` | plain HTTP port for the resource pack, only with a self-signed certificate; `0` turns it off |
+| `web.https.pack-port` | `8101` | development builds with a self-signed certificate only: plain HTTP port for the resource pack; `0` turns it off |
 
 ## Uploads
 
@@ -41,12 +41,14 @@ Everything is in `plugins/PhotoMaps/config.yml`. Apply changes with `/photomaps 
 | Option | Default | |
 |---|---|---|
 | `resource-pack.enabled` | `true` | send the pack with the photo code's texture to Java players |
-| `resource-pack.url` | empty | host the pack yourself instead of the plugin's web server |
+| `resource-pack.url` | empty | host the pack yourself; by default it comes from the GitHub release of the installed version |
 | `resource-pack.required` | `false` | kick players who decline it |
 | `resource-pack.prompt` | empty | text shown when the pack is offered |
 | `bedrock.install-pack` | `true` | copy the Bedrock pack and item mapping into Geyser on startup |
 
-The pack only adds files in the `photomaps` namespace, so it can be merged into a server resource pack: take
+The pack is sent in addition to other packs and only adds files in the `photomaps` namespace, so it works next to
+PorticleGun and server resource packs. If a player cannot load it, the console says so with the reason. It can also be
+merged into a server resource pack: take
 `PhotoMaps-resourcepack-<version>.zip` from the release and set `resource-pack.enabled: false`.
 
 ## Texts

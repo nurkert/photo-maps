@@ -37,8 +37,8 @@ web:
     private-key: ""
     keystore: ""
     keystore-password: ""
-    # Only with a self-signed certificate: Minecraft refuses packs from it, so the (public, hash-checked) resource
-    # pack is offered on this plain HTTP port. 0 turns it off.
+    # Only for development builds with a self-signed certificate (releases send the pack from GitHub): Minecraft
+    # refuses packs from self-signed servers, so the (public, hash-checked) pack is offered on this plain HTTP port.
     pack-port: 8101
 
 upload:
@@ -60,10 +60,10 @@ recipe:
   enabled: true
 
 resource-pack:
-  # Sends the texture of the photo code to Java players. Bedrock players get it from Geyser.
+  # Sends the texture of the photo code to Java players, next to any other pack. Bedrock players get it from Geyser.
   enabled: true
-  # The pack is served by the built-in web server. Set an URL here if you host it somewhere else (or merge it into
-  # your server resource pack and set enabled: false).
+  # Releases send the pack from their GitHub release, which every player can download. Set an URL here to host it
+  # yourself, or merge it into your server resource pack and set enabled: false.
   url: ""
   required: false
   prompt: ""

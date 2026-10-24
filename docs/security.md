@@ -80,9 +80,9 @@ compared with what the browser shows.
 
 This is fine for LAN servers and friends. For public servers, use Let's Encrypt.
 
-Minecraft itself refuses to download resource packs from self-signed servers, so in this mode the resource pack is
-offered over plain HTTP on `web.https.pack-port` (8101). The pack contains only the photo code's texture and
-Minecraft checks it against its SHA-1 hash. Set `pack-port: 0` to turn this off.
+The resource pack does not come from this web server: releases send it from their GitHub release, so the certificate
+does not matter for it. Only development builds, which have no release, offer it over plain HTTP on
+`web.https.pack-port` (8101), because Minecraft refuses packs from self-signed servers.
 
 ### Behind a reverse proxy
 

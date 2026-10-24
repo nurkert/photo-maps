@@ -101,9 +101,10 @@ web:
 Open port 8100 (the page) and port 80 (Let's Encrypt's check, only used for a few seconds every two months). See
 [Security and HTTPS](docs/security.md) for port forwarding, your own certificate files and reverse proxies.
 
-With a self-signed certificate the resource pack is served on `web.https.pack-port` (8101) over plain HTTP, because
-Minecraft refuses packs from untrusted certificates; the pack is public and checked by its SHA-1 hash. Open that port
-too, or merge the pack into your server resource pack and set `resource-pack.enabled: false`.
+The resource pack is sent from the GitHub release of the installed version, next to any other pack (it only adds files
+in its own `photomaps` namespace), so it needs no port and works with PorticleGun and any server resource pack. To
+host it yourself, set `resource-pack.url`, or merge it into your server resource pack and set
+`resource-pack.enabled: false`.
 
 All options are explained in [config.yml](src/main/resources/config.yml). Chat texts are in
 `messages_en.yml` and `messages_de.yml`; each player sees the language of their client.

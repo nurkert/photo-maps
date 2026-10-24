@@ -92,7 +92,10 @@ public final class PhotoMaps extends JavaPlugin {
         web = new WebServer(getLogger(), sessions, palette, new Deliveries(this), settings);
         try {
             ResourcePacks packs = new ResourcePacks(this);
-            web.setPack(packs.pack(), packs.sha1());
+            if (packs.isSelfHosted()) {
+                // development builds: no release to download the pack from
+                web.setPack(packs.pack(), packs.sha1());
+            }
             plugins.registerEvents(packs, this);
         } catch (IOException exception) {
             getLogger().log(Level.WARNING, "The Java resource pack is missing, photo codes will look like paper", exception);
@@ -181,7 +184,7 @@ public final class PhotoMaps extends JavaPlugin {
             } else if (tls.isSelfSigned()) {
                 getLogger().info("Using a self-signed certificate (SHA-256 " + tls.fingerprint() + "). Phones show a "
                         + "warning once; set web.https.lets-encrypt.domain for a trusted certificate.");
-                if (settings.publicUrl().isEmpty() && settings.packPort() > 0) {
+                if (web.hasPackServer()) {
                     getLogger().info("The resource pack is served on port " + settings.packPort() + " (plain HTTP, "
                             + "Minecraft refuses packs from self-signed servers; the pack is checked by its hash).");
                 }
