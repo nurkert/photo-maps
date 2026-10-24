@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "PhotoMaps",
+    "description": "Photo code item of PhotoMaps (Geyser)",
+    "uuid": "5d0c7a4e-91b2-4c3f-8e6a-2f7b19d4c0a8",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "b8e2f0d1-3a6c-4b95-a7d4-6c1e9f2b5a37",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

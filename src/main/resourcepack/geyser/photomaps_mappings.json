@@ -1,0 +1,18 @@
+{
+  "format_version": 2,
+  "items": {
+    "minecraft:paper": [
+      {
+        "type": "definition",
+        "model": "photomaps:qr_code",
+        "bedrock_identifier": "photomaps:qr_code",
+        "display_name": "Photo Code",
+        "bedrock_options": {
+          "icon": "photomaps_qr_code",
+          "display_handheld": false,
+          "creative_category": "items"
+        }
+      }
+    ]
+  }
+}

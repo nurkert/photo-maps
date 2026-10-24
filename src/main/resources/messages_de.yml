@@ -1,0 +1,42 @@
+prefix: "&8[&bPhotoMaps&8] &7"
+item:
+  name: "&bFoto-Code"
+  lore:
+    - "&7Rechtsklick zeigt den Code,"
+    - "&7dann mit dem Handy scannen."
+  map-name: "&bFoto-Code &7(scan mich)"
+  map-lore:
+    - "&7In der Hand halten und scannen."
+    - "&7Rechtsklick: Code erneuern."
+  picture-name: "&fBild #%id% &7(%part%/%parts%)"
+  picture-lore:
+    - "&7Spalte %column%, Zeile %row%"
+    - "&8Klick auf einen leeren Rahmen: die"
+    - "&8anderen Teile hängen sich daneben."
+map:
+  scan: "Scannen!"
+  inactive-1: "Rechtsklick"
+  inactive-2: "zum Aktivieren"
+code:
+  ready: "Scanne den Code in deiner Hand mit dem Handy oder öffne:"
+  open-link: "&b&n%url%"
+  link-hover: "Upload-Seite öffnen"
+  valid: "&8Der Code ist %minutes% Minuten gültig."
+  self-signed: "&8Dein Handy warnt evtl. einmal vor dem Zertifikat: die Verbindung ist trotzdem verschlüsselt."
+  no-web: "&cDer Webserver läuft nicht, sag einem Admin Bescheid (Konsole)."
+  no-permission: "&cDu darfst keine Foto-Codes benutzen."
+upload:
+  received: "&aDein Bild ist angekommen: %count% Karte(n) in deinem Inventar."
+  dropped: "&eDein Inventar ist voll, der Rest liegt zu deinen Füßen."
+frames:
+  placed: "&a%count% Teil(e) des Bildes aufgehängt."
+command:
+  help:
+    - "&b/photomaps give [Spieler] [Anzahl] &7- Foto-Codes geben"
+    - "&b/photomaps link &7- Upload-Seite ohne Code öffnen"
+    - "&b/photomaps reload &7- Konfiguration neu laden"
+  given: "%amount% Foto-Code(s) an %player% gegeben."
+  player-not-found: "&cSpieler %player% ist nicht online."
+  reloaded: "Konfiguration neu geladen."
+  players-only: "&cDas können nur Spieler."
+  no-permission: "&cDas darfst du nicht."

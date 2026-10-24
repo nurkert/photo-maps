@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1d1610">
+  <meta name="robots" content="noindex">
+  <title>PhotoMaps</title>
+  <link rel="icon" href="/assets/icon.png">
+  <link rel="preload" href="/assets/monocraft.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/app.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <h1 class="shadow">PhotoMaps</h1>
+    <p class="who"><span id="who"></span> <span class="timer" id="timer" hidden></span></p>
+  </header>
+
+  <main>
+    <section class="step" id="step-loading">
+      <p class="screen-text shadow" data-i18n="loading"></p>
+    </section>
+
+    <!-- like the "Connection Lost" screen -->
+    <section class="step" id="step-error" hidden>
+      <div class="screen">
+        <h2 class="screen-title" id="error-title"></h2>
+        <p class="screen-text shadow" id="error-text"></p>
+      </div>
+    </section>
+
+    <section class="step" id="step-pick" hidden>
+      <div class="panel">
+        <h2 class="panel-title" data-i18n="pickTitle"></h2>
+        <p class="panel-text" data-i18n="pickLead"></p>
+        <div class="choices">
+          <label class="mc-button choice">
+            <input type="file" accept="image/*" capture="environment" data-source>
+            <span class="slot"><img src="/assets/camera.png" alt="" width="32" height="32"></span>
+            <span class="label shadow" data-i18n="camera"></span>
+          </label>
+          <label class="mc-button choice">
+            <input type="file" accept="image/*" capture="user" data-source>
+            <span class="slot"><img src="/assets/selfie.png" alt="" width="32" height="32"></span>
+            <span class="label shadow" data-i18n="selfie"></span>
+          </label>
+          <label class="mc-button choice">
+            <input type="file" accept="image/*" data-source>
+            <span class="slot"><img src="/assets/gallery.png" alt="" width="32" height="32"></span>
+            <span class="label shadow" data-i18n="gallery"></span>
+          </label>
+        </div>
+        <p class="panel-text drop-hint" data-i18n="dropHint"></p>
+      </div>
+    </section>
+
+    <section class="step" id="step-edit" hidden>
+      <div class="stage-wrap" id="stage-wrap">
+        <canvas id="stage"></canvas>
+      </div>
+
+      <p class="tooltip" id="summary"></p>
+
+      <div class="options">
+        <label class="mc-slider">
+          <input type="range" id="columns" min="1" max="5" step="1" value="1">
+          <span class="slider-label shadow" id="columns-label"></span>
+        </label>
+        <label class="mc-slider">
+          <input type="range" id="rows" min="1" max="5" step="1" value="1">
+          <span class="slider-label shadow" id="rows-label"></span>
+        </label>
+        <label class="mc-slider wide">
+          <input type="range" id="zoom" min="1" max="5" step="0.01" value="1">
+          <span class="slider-label shadow" id="zoom-label"></span>
+        </label>
+        <button type="button" class="mc-button" id="rotate"><span class="shadow" data-i18n="rotate"></span></button>
+        <button type="button" class="mc-button" id="fit" aria-pressed="false"><span class="shadow" id="fit-label"></span></button>
+        <button type="button" class="mc-button wide" id="preview" aria-pressed="false"><span class="shadow" id="preview-label"></span></button>
+      </div>
+      <p class="hint shadow" data-i18n="editHint"></p>
+
+      <div class="actions">
+        <button type="button" class="mc-button" id="other"><span class="shadow" data-i18n="other"></span></button>
+        <button type="button" class="mc-button" id="send"><span class="shadow" data-i18n="send"></span></button>
+      </div>
+    </section>
+
+    <section class="step" id="step-sending" hidden>
+      <div class="screen">
+        <p class="screen-text shadow" data-i18n="sending"></p>
+        <div class="progress" aria-hidden="true"><span></span></div>
+      </div>
+    </section>
+
+    <section class="step" id="step-done" hidden>
+      <div class="screen">
+        <!-- like an advancement toast -->
+        <div class="toast" role="status">
+          <img src="/assets/map.png" alt="" width="32" height="32">
+          <div>
+            <p class="toast-title" data-i18n="doneTitle"></p>
+            <p class="toast-text" id="done-title"></p>
+          </div>
+        </div>
+        <p class="screen-text shadow" data-i18n="doneText"></p>
+        <button type="button" class="mc-button" id="more"><span class="shadow" data-i18n="more"></span></button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

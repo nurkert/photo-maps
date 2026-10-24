@@ -1,0 +1,58 @@
+# PhotoMaps configuration. Apply changes with /photomaps reload (the web server restarts if its address changed).
+
+web:
+  # Port of the built-in web server. Open it in your firewall/router if players are not in your local network.
+  port: 8100
+  # Address the web server listens on. 0.0.0.0 means every network interface.
+  bind: "0.0.0.0"
+  # Address the QR codes point to, as players' phones reach it, e.g. "https://photos.example.com:8100".
+  # Empty: https://<this server's address>:<port>, the local network address if server-ip is not set.
+  public-url: ""
+
+  # Pictures are uploaded over HTTPS (TLS 1.2/1.3), so nobody on the way can see them.
+  https:
+    enabled: true
+    # Your own certificate for a domain (recommended for public servers; phones trust it without a warning).
+    # Let's Encrypt (certbot) example:
+    #   certificate: "/etc/letsencrypt/live/photos.example.com/fullchain.pem"
+    #   private-key: "/etc/letsencrypt/live/photos.example.com/privkey.pem"
+    # Renewed files are picked up automatically. Instead of PEM files you can use a PKCS#12 key store.
+    # Without a certificate the plugin creates a self-signed one: still encrypted, but phones show a warning once.
+    certificate: ""
+    private-key: ""
+    keystore: ""
+    keystore-password: ""
+    # Only with a self-signed certificate: Minecraft refuses packs from it, so the (public, hash-checked) resource
+    # pack is offered on this plain HTTP port. 0 turns it off.
+    pack-port: 8101
+
+upload:
+  # How long a scanned photo code stays valid, in minutes. Right-click the code to renew it.
+  session-minutes: 15
+  # The largest picture, counted in maps.
+  max-columns: 5
+  max-rows: 5
+  # Survival: every map of a picture costs one empty map from the player's inventory.
+  # Players with photomaps.unlimited and players in creative mode never pay.
+  consume-empty-maps: true
+
+frames:
+  # Clicking an empty item frame with one part of a picture hangs the other parts from your inventory into the
+  # empty frames around it, in the right order.
+  auto-place: true
+
+recipe:
+  enabled: true
+
+resource-pack:
+  # Sends the texture of the photo code to Java players. Bedrock players get it from Geyser.
+  enabled: true
+  # The pack is served by the built-in web server. Set an URL here if you host it somewhere else (or merge it into
+  # your server resource pack and set enabled: false).
+  url: ""
+  required: false
+  prompt: ""
+
+bedrock:
+  # Copies the Bedrock pack and the item mapping into Geyser's folders on startup.
+  install-pack: true

@@ -1,0 +1,12 @@
+{
+  "pack": {
+    "description": "PhotoMaps: photo code",
+    "pack_format": 46,
+    "supported_formats": {
+      "min_inclusive": 46,
+      "max_inclusive": 99
+    },
+    "min_format": 46,
+    "max_format": 99
+  }
+}

@@ -1,0 +1,42 @@
+prefix: "&8[&bPhotoMaps&8] &7"
+item:
+  name: "&bPhoto Code"
+  lore:
+    - "&7Right-click to show the code,"
+    - "&7then scan it with your phone."
+  map-name: "&bPhoto Code &7(scan me)"
+  map-lore:
+    - "&7Hold it and scan it with your phone."
+    - "&7Right-click: renew the code."
+  picture-name: "&fPicture #%id% &7(%part%/%parts%)"
+  picture-lore:
+    - "&7Column %column%, row %row%"
+    - "&8Click an empty frame: the other"
+    - "&8parts hang themselves next to it."
+map:
+  scan: "Scan me!"
+  inactive-1: "Right-click"
+  inactive-2: "to activate"
+code:
+  ready: "Scan the code in your hand with your phone, or open:"
+  open-link: "&b&n%url%"
+  link-hover: "Open the upload page"
+  valid: "&8The code is valid for %minutes% minutes."
+  self-signed: "&8Your phone may warn about the certificate once: the connection is still encrypted."
+  no-web: "&cThe web server is not running, ask an admin to check the console."
+  no-permission: "&cYou are not allowed to use photo codes."
+upload:
+  received: "&aYour picture arrived: %count% map(s) are in your inventory."
+  dropped: "&eYour inventory is full, the rest lies at your feet."
+frames:
+  placed: "&aHung %count% part(s) of the picture."
+command:
+  help:
+    - "&b/photomaps give [player] [amount] &7- give photo codes"
+    - "&b/photomaps link &7- open the upload page without a code"
+    - "&b/photomaps reload &7- reload the configuration"
+  given: "Gave %amount% photo code(s) to %player%."
+  player-not-found: "&cPlayer %player% is not online."
+  reloaded: "Configuration reloaded."
+  players-only: "&cOnly players can do that."
+  no-permission: "&cYou are not allowed to do that."

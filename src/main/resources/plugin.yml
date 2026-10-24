@@ -1,0 +1,29 @@
+name: PhotoMaps
+version: '${project.version}'
+main: eu.nurkert.photomaps.PhotoMaps
+api-version: '1.21'
+authors: [ nurkert ]
+description: Craft a photo code, scan it with your phone and put your photos on maps
+# installs the Bedrock pack before Geyser reads its packs folder
+loadbefore: [Geyser-Spigot]
+
+commands:
+  photomaps:
+    description: Gives photo codes, shows the web interface address or reloads the configuration
+    aliases: [pm, photomap]
+    usage: /<command> [give|link|reload]
+    permission: photomaps.command
+
+permissions:
+  photomaps.command:
+    description: Allows /photomaps
+    default: true
+  photomaps.use:
+    description: Allows crafting and using photo codes
+    default: true
+  photomaps.unlimited:
+    description: Uploads need no empty maps
+    default: op
+  photomaps.admin:
+    description: Allows /photomaps give and /photomaps reload
+    default: op
