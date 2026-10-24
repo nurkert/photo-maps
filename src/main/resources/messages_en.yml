@@ -17,12 +17,15 @@ map:
   scan: "Scan me!"
   inactive-1: "Right-click"
   inactive-2: "to activate"
+  foreign-1: "Not your"
+  foreign-2: "photo code"
 code:
   ready: "Scan the code in your hand with your phone, or open:"
   open-link: "&b&n%url%"
   link-hover: "Open the upload page"
   valid: "&8The code is valid for %minutes% minutes."
   self-signed: "&8Your phone may warn about the certificate once: the connection is still encrypted."
+  not-yours: "&cThis photo code belongs to someone else. Craft your own."
   no-web: "&cThe web server is not running, ask an admin to check the console."
   no-permission: "&cYou are not allowed to use photo codes."
 upload:

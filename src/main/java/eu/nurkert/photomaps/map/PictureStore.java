@@ -5,17 +5,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,8 +26,8 @@ import org.bukkit.map.MapView;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * Keeps the pixels of every picture map and the ids of the photo code maps, and gives those maps their renderers
- * whenever the server loads them.
+ * Keeps the pixels of every picture map and the photo code maps with their owners, and gives those maps their
+ * renderers whenever the server loads them.
  *
  * <p>Plugin renderers are not saved with the world, so every map would come back empty after a restart. The pixels
  * of each map are therefore stored in {@code pictures/<map id>.bin} (16 KiB, gzipped) and the renderer is attached
@@ -40,7 +41,8 @@ public final class PictureStore implements Listener {
     private final File folder;
     private final File codesFile;
     private final Map<Integer, byte[]> pixels = new ConcurrentHashMap<>();
-    private final Set<Integer> codeMaps = ConcurrentHashMap.newKeySet();
+    // photo code map id -> owner; a code map belongs to whoever activated it, copies of it included
+    private final Map<Integer, UUID> codeMaps = new ConcurrentHashMap<>();
     private final QrRenderer.Factory qrRenderers;
 
     public PictureStore(JavaPlugin plugin, QrRenderer.Factory qrRenderers) {
@@ -49,7 +51,16 @@ public final class PictureStore implements Listener {
         this.codesFile = new File(plugin.getDataFolder(), "codes.yml");
         this.qrRenderers = qrRenderers;
         YamlConfiguration codes = YamlConfiguration.loadConfiguration(codesFile);
-        codeMaps.addAll(codes.getIntegerList("maps"));
+        ConfigurationSection owners = codes.getConfigurationSection("owners");
+        if (owners != null) {
+            for (String id : owners.getKeys(false)) {
+                try {
+                    codeMaps.put(Integer.parseInt(id), UUID.fromString(owners.getString(id)));
+                } catch (IllegalArgumentException | NullPointerException ignored) {
+                    // a broken line, that map shows no code until it is activated again
+                }
+            }
+        }
     }
 
     /**
@@ -58,7 +69,7 @@ public final class PictureStore implements Listener {
      */
     @SuppressWarnings("deprecation") // Bukkit.getMap(int) is the only lookup by id
     public void attachLoaded() {
-        Set<Integer> ids = new HashSet<>(codeMaps);
+        Set<Integer> ids = new HashSet<>(codeMaps.keySet());
         File[] files = folder.listFiles((dir, name) -> name.endsWith(".bin"));
         if (files != null) {
             for (File file : files) {
@@ -87,7 +98,7 @@ public final class PictureStore implements Listener {
             return;
         }
         MapRenderer renderer = null;
-        if (codeMaps.contains(view.getId())) {
+        if (codeMaps.containsKey(view.getId())) {
             renderer = qrRenderers.create(view.getId());
         } else {
             byte[] data = load(view.getId());
@@ -112,22 +123,35 @@ public final class PictureStore implements Listener {
     }
 
     /**
-     * Turns a fresh map into a picture map. Call on the main thread; the file is written in the background.
+     * Turns a fresh map into a picture map. Call on the main thread, before the map is handed out.
+     *
+     * <p>The file is written right away (16 KiB, well under a millisecond) instead of in the background: a background
+     * task would be dropped if the server stopped in the same moment, and the picture would be lost.
+     *
+     * @throws IOException if the picture could not be stored; then the map must not be handed out
      */
-    public void addPicture(MapView view, byte[] data) {
+    public void addPicture(MapView view, byte[] data) throws IOException {
+        save(view.getId(), data);
         pixels.put(view.getId(), data);
         prepare(view);
         view.addRenderer(new PictureRenderer(data));
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> save(view.getId(), data));
     }
 
-    /** Turns a fresh map into a photo code map. Call on the main thread. */
-    public void addCode(MapView view) {
-        codeMaps.add(view.getId());
-        prepare(view);
-        view.addRenderer(qrRenderers.create(view.getId()));
+    /**
+     * Turns a fresh map into a photo code map of {@code owner}, or gives an existing one a new owner. Call on the main
+     * thread.
+     */
+    public void addCode(MapView view, UUID owner) {
+        boolean known = codeMaps.containsKey(view.getId());
+        codeMaps.put(view.getId(), owner);
+        if (!known || view.getRenderers().stream().noneMatch(r -> r instanceof QrRenderer)) {
+            prepare(view);
+            view.addRenderer(qrRenderers.create(view.getId()));
+        }
         YamlConfiguration codes = new YamlConfiguration();
-        codes.set("maps", codeMaps.stream().sorted().toList());
+        codeMaps.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> codes.set("owners." + entry.getKey(), entry.getValue().toString()));
         try {
             codes.save(codesFile);
         } catch (IOException exception) {
@@ -136,7 +160,14 @@ public final class PictureStore implements Listener {
     }
 
     public boolean isCode(int mapId) {
-        return codeMaps.contains(mapId);
+        return codeMaps.containsKey(mapId);
+    }
+
+    /**
+     * @return who the photo code map belongs to, {@code null} if it is no code map
+     */
+    public UUID codeOwner(int mapId) {
+        return codeMaps.get(mapId);
     }
 
     private byte[] load(int id) {
@@ -159,17 +190,20 @@ public final class PictureStore implements Listener {
         }
     }
 
-    private void save(int id, byte[] data) {
-        try {
-            Files.createDirectories(folder.toPath());
-            File temp = new File(folder, id + ".bin.tmp");
-            try (OutputStream out = new GZIPOutputStream(new FileOutputStream(temp))) {
-                out.write(data);
-            }
-            Files.move(
-                    temp.toPath(), new File(folder, id + ".bin").toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException exception) {
-            plugin.getLogger().log(Level.SEVERE, "Could not save picture map " + id, exception);
+    /** Writes the pixels to a temporary file and moves it into place, so a crash never leaves half a file. */
+    private void save(int id, byte[] data) throws IOException {
+        Files.createDirectories(folder.toPath());
+        File temp = new File(folder, id + ".bin.tmp");
+        try (FileOutputStream file = new FileOutputStream(temp);
+                GZIPOutputStream out = new GZIPOutputStream(file)) {
+            out.write(data);
+            out.finish();
+            file.getFD().sync(); // on disk before the map is handed out
         }
+        Files.move(
+                temp.toPath(),
+                new File(folder, id + ".bin").toPath(),
+                StandardCopyOption.REPLACE_EXISTING,
+                StandardCopyOption.ATOMIC_MOVE);
     }
 }

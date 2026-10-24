@@ -20,6 +20,9 @@ python3 scripts/generate_resourcepack.py
 
 Commit the generated files; the build only zips them. CI checks that the generated JSON files are up to date.
 
+`python3 scripts/render_recipe.py` draws the crafting recipe image (`images/crafting_photo_code.png`) from the same
+sprites, in the look of the game's crafting window but without any game textures.
+
 ## The web interface
 
 Plain HTML, CSS and JavaScript in `src/main/resources/web`, no build step. The page asks the server for the map

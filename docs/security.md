@@ -124,5 +124,9 @@ If the configured certificate cannot be loaded, the web server stays off instead
 
 ## In the world
 
+- The QR code of a photo code map is only drawn for its owner. Everyone else sees "Not your photo code", on copies
+  and in item frames, so nobody can scan someone else's code from their screen. Right-clicking a copy does not take
+  the code over.
+
 Hanging the other parts of a picture into neighbouring item frames asks protection plugins such as WorldGuard about
 every single frame, exactly as if the player had clicked it.

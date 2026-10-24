@@ -59,7 +59,7 @@ back to the built-in texts, so updates never show empty messages.
 
 | File | |
 |---|---|
-| `pictures/<map id>.bin` | the pixels of every picture map (16 KB each, gzipped). Deleting one leaves that map blank |
-| `codes.yml` | the ids of the photo code maps |
+| `pictures/<map id>.bin` | the pixels of every picture map (16 KB each, gzipped), written before the map is handed out. Back them up with the world; deleting one leaves that map blank |
+| `codes.yml` | the photo code maps and who they belong to |
 | `tls/self-signed.p12` | the self-signed certificate, recreated when the server's address changes |
 | `tls/lets-encrypt/` | the Let's Encrypt account key and, per domain, `fullchain.pem` and `privkey.pem` |

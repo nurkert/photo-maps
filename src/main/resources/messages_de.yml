@@ -17,12 +17,15 @@ map:
   scan: "Scannen!"
   inactive-1: "Rechtsklick"
   inactive-2: "zum Aktivieren"
+  foreign-1: "Nicht dein"
+  foreign-2: "Foto-Code"
 code:
   ready: "Scanne den Code in deiner Hand mit dem Handy oder öffne:"
   open-link: "&b&n%url%"
   link-hover: "Upload-Seite öffnen"
   valid: "&8Der Code ist %minutes% Minuten gültig."
   self-signed: "&8Dein Handy warnt evtl. einmal vor dem Zertifikat: die Verbindung ist trotzdem verschlüsselt."
+  not-yours: "&cDieser Foto-Code gehört jemand anderem. Crafte dir deinen eigenen."
   no-web: "&cDer Webserver läuft nicht, sag einem Admin Bescheid (Konsole)."
   no-permission: "&cDu darfst keine Foto-Codes benutzen."
 upload:

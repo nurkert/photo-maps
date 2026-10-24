@@ -4,9 +4,11 @@ import eu.nurkert.photomaps.item.PhotoItems;
 import eu.nurkert.photomaps.map.PictureStore;
 import eu.nurkert.photomaps.web.Sessions;
 import eu.nurkert.photomaps.web.WebServer;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -80,7 +82,20 @@ final class Deliveries implements WebServer.Backend {
             if (picture < 0) {
                 picture = view.getId();
             }
-            store.addPicture(view, tiles.get(i));
+            try {
+                store.addPicture(view, tiles.get(i));
+            } catch (IOException exception) {
+                // hand out nothing that could be blank after a restart, and give the empty maps back
+                plugin.getLogger().log(Level.SEVERE, "Could not store a picture of " + player.getName(), exception);
+                if (pays(player)) {
+                    for (ItemStack leftover : player.getInventory()
+                            .addItem(new ItemStack(Material.MAP, parts.size()))
+                            .values()) {
+                        player.getWorld().dropItem(player.getLocation(), leftover);
+                    }
+                }
+                return WebServer.Result.failure("server", 0, 0);
+            }
             int part = parts.get(i);
             maps.add(items.createPart(
                     player, view, new PhotoItems.Part(picture, part % columns, part / columns, columns, rows)));

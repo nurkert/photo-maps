@@ -75,7 +75,9 @@ public final class PhotoMaps extends JavaPlugin {
         palette = Palette.fromServer();
         items = new PhotoItems(this);
         sessions = new Sessions();
-        pictures = new PictureStore(this, mapId -> new QrRenderer(mapId, this::urlForMap, palette));
+        // the lambda reads the field when a renderer is made, after it was assigned
+        pictures = new PictureStore(
+                this, mapId -> new QrRenderer(mapId, this::urlForMap, id -> pictures.codeOwner(id), palette));
         recipe = new RecipeListener(this, items);
 
         var plugins = getServer().getPluginManager();

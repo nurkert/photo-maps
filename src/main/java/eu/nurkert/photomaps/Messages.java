@@ -66,7 +66,11 @@ public final class Messages {
      * @param replacements pairs of placeholder (without percent signs) and value
      */
     public static String get(CommandSender sender, String key, Object... replacements) {
-        String text = bundles.get(language(sender)).getString(key, key);
+        // getString(key, fallback) would skip the bundled defaults, so texts added in an update would show as keys
+        String text = bundles.get(language(sender)).getString(key);
+        if (text == null) {
+            text = key;
+        }
         return colour(replace(text, replacements));
     }
 

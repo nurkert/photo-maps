@@ -36,11 +36,9 @@
 
 1. **Craft a photo code**: four ink sacs around an empty map.
 
-   ```
-     . I .        I = ink sac
-     I M I        M = empty map
-     . I .
-   ```
+   <p align="center">
+     <img src="images/crafting_photo_code.png" alt="Photo code recipe: four ink sacs around an empty map" width="560">
+   </p>
 
 2. **Right-click it**: it turns into a map that shows a QR code. Hold it and scan it with your phone (or click the link
    in chat).
@@ -50,8 +48,12 @@
 4. **Send it**: the parts arrive in your inventory as maps. Put one into an empty item frame on a wall and the other
    parts hang themselves into the empty frames around it, each in its place.
 
-Right-click the code map again to renew it. In survival, every part of a picture costs one empty map from your
-inventory (configurable).
+Right-click the code map again to renew it. A code belongs to whoever activated it: copies show other players
+"Not your photo code" instead of the QR code, and cannot be taken over. In survival, every part of a picture costs one
+empty map from your inventory (configurable).
+
+Pictures are stored the moment they arrive, before the maps are handed out, and look exactly the same after
+rejoining or restarting the server.
 
 ## Java and Bedrock
 

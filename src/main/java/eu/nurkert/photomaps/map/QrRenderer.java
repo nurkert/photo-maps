@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.function.IntFunction;
 import javax.imageio.ImageIO;
@@ -18,7 +19,9 @@ import org.bukkit.map.MinecraftFont;
 
 /**
  * Draws a photo code map: the QR code of its upload page while a session is open, otherwise the photo code icon and
- * a hint to right-click it. Drawn per player, because the hint is in the player's language.
+ * a hint to right-click it. Drawn per player: the hint is in the player's language, and only the code's owner sees the
+ * QR code. Everyone else (a copy of the map, a map in an item frame) sees that it is not theirs, because the QR code
+ * is the key to the owner's upload page.
  */
 public final class QrRenderer extends MapRenderer {
 
@@ -33,6 +36,7 @@ public final class QrRenderer extends MapRenderer {
 
     private final int mapId;
     private final IntFunction<String> urls;
+    private final IntFunction<UUID> owners;
     private final Palette palette;
     // what each player's canvas currently shows, so it is only drawn again when that changes; keyed like the server
     // keys the canvases, by player object, so a player who rejoins gets drawn on the fresh canvas
@@ -40,24 +44,30 @@ public final class QrRenderer extends MapRenderer {
 
     /**
      * @param urls the upload page of a photo code map, {@code null} while it has no open session
+     * @param owners the owner of a photo code map
      */
-    public QrRenderer(int mapId, IntFunction<String> urls, Palette palette) {
+    public QrRenderer(int mapId, IntFunction<String> urls, IntFunction<UUID> owners, Palette palette) {
         super(true);
         this.mapId = mapId;
         this.urls = urls;
+        this.owners = owners;
         this.palette = palette;
     }
 
     @Override
     public void render(MapView map, MapCanvas canvas, Player player) {
-        String url = urls.apply(mapId);
-        String state = url + "|" + Messages.get(player, "map.scan");
+        UUID owner = owners.apply(mapId);
+        boolean mine = player.getUniqueId().equals(owner);
+        String url = mine ? urls.apply(mapId) : null;
+        String state = mine + "|" + url + "|" + Messages.get(player, "map.scan");
         if (Objects.equals(shown.get(player), state)) {
             return;
         }
         shown.put(player, state);
         if (url != null) {
             drawCode(canvas, url, Messages.get(player, "map.scan"));
+        } else if (owner != null && !mine) {
+            drawInactive(canvas, Messages.get(player, "map.foreign-1"), Messages.get(player, "map.foreign-2"));
         } else {
             drawInactive(canvas, Messages.get(player, "map.inactive-1"), Messages.get(player, "map.inactive-2"));
         }

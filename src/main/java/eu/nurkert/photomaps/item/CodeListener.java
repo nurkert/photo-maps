@@ -2,6 +2,7 @@ package eu.nurkert.photomaps.item;
 
 import eu.nurkert.photomaps.Messages;
 import eu.nurkert.photomaps.PhotoMaps;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -14,9 +15,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.map.MapView;
 
 /**
- * Right-clicking a photo code turns it into a photo code map and opens an upload page; right-clicking the map again
- * renews the page. Right-clicking a block works as well, which Bedrock touch players need, because they cannot
- * right-click the air with paper.
+ * Right-clicking a photo code turns it into a photo code map that belongs to the player and opens an upload page;
+ * right-clicking the map again renews the page. Copies of the map stay with their owner. Right-clicking a block works
+ * as well, in case a Bedrock touch screen does not send taps into the air.
  */
 public final class CodeListener implements Listener {
 
@@ -57,7 +58,7 @@ public final class CodeListener implements Listener {
         MapView view;
         if (code) {
             view = Bukkit.createMap(player.getWorld());
-            plugin.getPictureStore().addCode(view);
+            plugin.getPictureStore().addCode(view, player.getUniqueId());
             ItemStack map = items.createCodeMap(player, view);
             EquipmentSlot hand = event.getHand();
             if (item.getAmount() > 1) {
@@ -75,9 +76,15 @@ public final class CodeListener implements Listener {
             if (view == null) {
                 return;
             }
-            if (!plugin.getPictureStore().isCode(view.getId())) {
-                // a code map whose renderer data was lost: register it again
-                plugin.getPictureStore().addCode(view);
+            UUID owner = plugin.getPictureStore().codeOwner(view.getId());
+            if (owner != null && !owner.equals(player.getUniqueId())) {
+                // a copy of someone else's code: it stays theirs, its QR code is their key
+                Messages.send(player, "code.not-yours");
+                return;
+            }
+            if (owner == null) {
+                // a code map whose owner was lost: whoever activates it owns it
+                plugin.getPictureStore().addCode(view, player.getUniqueId());
             }
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.6f, 1.6f);
         }

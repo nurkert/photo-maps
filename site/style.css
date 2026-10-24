@@ -497,6 +497,12 @@ main {
   image-rendering: auto;
 }
 
+.prose img[src*="crafting_"] {
+  max-width: min(100%, 560px);
+  border: none;
+  image-rendering: pixelated;
+}
+
 .prose code {
   padding: 1px 5px;
   background: #b3b3b3;

@@ -32,11 +32,7 @@ Bedrock players through Geyser need nothing extra, see [Bedrock and Geyser](bedr
 
 Four ink sacs around an empty map:
 
-| | | |
-|---|---|---|
-| | Ink sac | |
-| Ink sac | Empty map | Ink sac |
-| | Ink sac | |
+![Photo code recipe: four ink sacs around an empty map](../images/crafting_photo_code.png)
 
 Admins can hand them out with `/photomaps give`.
 
@@ -51,6 +47,10 @@ Admins can hand them out with `/photomaps give`.
 The code stays valid for 15 minutes (configurable); right-click it again to renew it. The same code can be used for
 many pictures.
 
+A code belongs to the player who activated it. Copies of the map (in item frames, from a cartography table) show
+everyone else "Not your photo code" instead of the QR code, because the QR code is the key to your upload page, and
+right-clicking a copy does not take it over.
+
 In survival, every part of a picture costs one empty map from your inventory, so get some maps before you scan.
 Creative players and players with `photomaps.unlimited` pay nothing.
 
@@ -60,5 +60,6 @@ Put any part of the picture into an empty item frame on a wall. The other parts 
 into the empty frames around it, each at its place in the picture. Place the frames first: one per map, in a
 rectangle the size of the picture.
 
-Pictures are vanilla maps: they can be copied in a cartography table or crafting grid like any map, and they keep
-their picture after server restarts.
+Pictures are vanilla maps: they can be copied in a cartography table or crafting grid like any map. Every picture
+is written to disk before its maps are handed out, so it looks exactly the same after rejoining and after a server
+restart, even one right after the upload.
