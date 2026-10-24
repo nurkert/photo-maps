@@ -12,9 +12,19 @@ picture and get it back as maps that hang on the wall.
    [PhotoMaps] Web interface running at https://192.168.1.20:8100
    ```
 
-3. Phones in the same network can use it right away. For players elsewhere, open port 8100 (and 8101 for the
-   resource pack, see [Security and HTTPS](security.md)) and set `web.public-url`, see
-   [Configuration](configuration.md).
+3. Phones in the same network can use it right away (they show a certificate warning once).
+4. For a public server with a domain, enter the domain and PhotoMaps gets a trusted certificate from Let's Encrypt by
+   itself:
+
+   ```yaml
+   web:
+     https:
+       lets-encrypt:
+         domain: "photos.example.com"
+   ```
+
+   Open port 8100 for the page and port 80 for Let's Encrypt's check, then `/photomaps reload`. Details in
+   [Security and HTTPS](security.md).
 
 Bedrock players through Geyser need nothing extra, see [Bedrock and Geyser](bedrock.md).
 

@@ -15,6 +15,10 @@ public record Settings(
         String keyStore,
         String keyStorePassword,
         int packPort,
+        String letsEncryptDomain,
+        String letsEncryptEmail,
+        int letsEncryptPort,
+        String acmeDirectory,
         int sessionMinutes,
         int maxColumns,
         int maxRows,
@@ -37,6 +41,10 @@ public record Settings(
                 config.getString("web.https.keystore", "").trim(),
                 config.getString("web.https.keystore-password", ""),
                 config.getInt("web.https.pack-port", 8101),
+                config.getString("web.https.lets-encrypt.domain", "").trim(),
+                config.getString("web.https.lets-encrypt.email", "").trim(),
+                config.getInt("web.https.lets-encrypt.challenge-port", 80),
+                acmeDirectory(config),
                 Math.max(1, config.getInt("upload.session-minutes", 15)),
                 clamp(config.getInt("upload.max-columns", 5)),
                 clamp(config.getInt("upload.max-rows", 5)),
@@ -47,6 +55,16 @@ public record Settings(
                 config.getString("resource-pack.url", "").trim(),
                 config.getBoolean("resource-pack.required", false),
                 config.getString("resource-pack.prompt", ""));
+    }
+
+    private static String acmeDirectory(FileConfiguration config) {
+        String custom = config.getString("web.https.lets-encrypt.directory", "").trim();
+        if (!custom.isEmpty()) {
+            return custom; // another ACME CA, or a test server
+        }
+        return config.getBoolean("web.https.lets-encrypt.staging", false)
+                ? "https://acme-staging-v02.api.letsencrypt.org/directory"
+                : "https://acme-v02.api.letsencrypt.org/directory";
     }
 
     // a picture can be at most 10x10 maps; more would freeze the client that renders them

@@ -35,6 +35,12 @@ starts a real Paper server with the plugin (and Geyser and Floodgate with `geyse
 HTTPS (plain HTTP and TLS 1.1 must be refused), runs `/photomaps reload` and fails on any exception from PhotoMaps.
 CI runs it on every push.
 
+## Let's Encrypt
+
+`LetsEncryptTest` gets a real certificate from [Pebble](https://github.com/letsencrypt/pebble), Let's Encrypt's test
+CA, when `PEBBLE_DIRECTORY`, `PEBBLE_CA` and `PEBBLE_CHALLENGE_PORT` are set; CI starts Pebble in Docker for it (see
+the `lets-encrypt` job in `.github/workflows/ci.yml`). Without them the test is skipped.
+
 ## Website and wiki
 
 ```

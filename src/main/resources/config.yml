@@ -6,18 +6,33 @@ web:
   # Address the web server listens on. 0.0.0.0 means every network interface.
   bind: "0.0.0.0"
   # Address the QR codes point to, as players' phones reach it, e.g. "https://photos.example.com:8100".
-  # Empty: https://<this server's address>:<port>, the local network address if server-ip is not set.
+  # Empty: https://<lets-encrypt domain>:<port> if a domain is set below, else https://<this server's address>:<port>
+  # (the local network address if server-ip is not set).
   public-url: ""
 
   # Pictures are uploaded over HTTPS (TLS 1.2/1.3), so nobody on the way can see them.
   https:
     enabled: true
-    # Your own certificate for a domain (recommended for public servers; phones trust it without a warning).
-    # Let's Encrypt (certbot) example:
+
+    # The easy way to a trusted certificate: enter the domain that points to this server and PhotoMaps gets a free
+    # certificate from Let's Encrypt by itself and renews it in time. By setting a domain you accept the Let's
+    # Encrypt Subscriber Agreement (https://letsencrypt.org/repository/).
+    lets-encrypt:
+      domain: ""
+      # Optional: Let's Encrypt may write here about your certificate.
+      email: ""
+      # Let's Encrypt checks the domain on port 80. PhotoMaps opens this port only for the few seconds that takes.
+      # Ports below 1024 need root on Linux: forward port 80 of your router/firewall to e.g. 8080 and set 8080 here.
+      challenge-port: 80
+      # Test certificates (not trusted by phones) without Let's Encrypt's rate limits, for trying out the setup.
+      staging: false
+
+    # Or your own certificate files, e.g. from certbot (these win over lets-encrypt):
     #   certificate: "/etc/letsencrypt/live/photos.example.com/fullchain.pem"
     #   private-key: "/etc/letsencrypt/live/photos.example.com/privkey.pem"
     # Renewed files are picked up automatically. Instead of PEM files you can use a PKCS#12 key store.
-    # Without a certificate the plugin creates a self-signed one: still encrypted, but phones show a warning once.
+    # Without any of these the plugin creates a self-signed certificate: still encrypted, but phones show a warning
+    # once. With a lets-encrypt domain, that is only used for the minute until the real certificate arrives.
     certificate: ""
     private-key: ""
     keystore: ""

@@ -59,6 +59,11 @@ web:
   port: $WEB_PORT
   https:
     pack-port: $((WEB_PORT + 1))
+    # a CA that cannot be reached: the plugin has to explain the failure and keep serving with its own certificate
+    lets-encrypt:
+      domain: "photos.example.test"
+      challenge-port: 0
+      directory: "https://127.0.0.1:9/directory"
 YAML
 
 LOG="$WORK/server.log"
@@ -104,7 +109,10 @@ check() {
 
 grep -q "Done (" "$LOG" || fail "server did not finish starting within ${STARTUP_TIMEOUT}s"
 grep -q "\[PhotoMaps\] Web interface running at https://" "$LOG" || fail "the web interface did not start with HTTPS"
-grep -q "\[PhotoMaps\] Using a self-signed certificate" "$LOG" || fail "no self-signed certificate was created"
+grep -q "\[PhotoMaps\] Using a temporary self-signed certificate until Let's Encrypt" "$LOG" \
+    || fail "no temporary certificate while waiting for Let's Encrypt"
+grep -q "Let's Encrypt could not issue a certificate for photos.example.test" "$LOG" \
+    || fail "the failed Let's Encrypt request was not explained"
 [ -f "$WORK/plugins/PhotoMaps/tls/self-signed.p12" ] || fail "the self-signed certificate was not stored"
 grep -q "Disabling PhotoMaps" "$LOG" || fail "PhotoMaps was not disabled on shutdown"
 check https-page 200 "the upload page is not served over HTTPS"

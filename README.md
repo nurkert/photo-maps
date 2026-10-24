@@ -66,10 +66,10 @@ inventory (configurable).
 
 Pictures travel from the phone to the server, so the web server is locked down:
 
-- **HTTPS only** (TLS 1.2 and 1.3). With your own certificate (e.g. Let's Encrypt) phones trust it right away;
-  renewed certificate files are picked up automatically. Without one, PhotoMaps creates a self-signed certificate:
-  the connection is just as encrypted, but phones show a warning once. If the certificate cannot be loaded the web
-  server stays off rather than falling back to plain HTTP.
+- **HTTPS only** (TLS 1.2 and 1.3). Enter your domain and PhotoMaps gets and renews a **Let's Encrypt** certificate
+  by itself, no certbot needed. Your own certificate files work too. Without either, PhotoMaps creates a
+  self-signed certificate: just as encrypted, but phones show a warning once. If a certificate cannot be loaded the
+  web server stays off rather than falling back to plain HTTP.
 - Every upload page needs an **unguessable token** (96 random bits) that expires after 15 minutes. Addresses that
   keep guessing tokens are blocked for a minute.
 - Uploads are **checked before they are decoded**: exact pixel size, at most 16 MB, one upload per code at a time.
@@ -85,17 +85,19 @@ Turning HTTPS off is only meant for running behind a reverse proxy that does HTT
 Drop the jar into `plugins/` and start the server. The console prints the address of the web interface, e.g.
 `https://192.168.1.20:8100`, which works for phones in the same network.
 
-For players outside your network, open the port in your router/firewall and set `web.public-url`, ideally with a
-domain and a real certificate:
+For a public server, point a domain at it and enter it. PhotoMaps gets a trusted certificate from Let's Encrypt
+and renews it automatically:
 
 ```yaml
 web:
   port: 8100
-  public-url: "https://photos.example.com:8100"
   https:
-    certificate: "/etc/letsencrypt/live/photos.example.com/fullchain.pem"
-    private-key: "/etc/letsencrypt/live/photos.example.com/privkey.pem"
+    lets-encrypt:
+      domain: "photos.example.com"
 ```
+
+Open port 8100 (the page) and port 80 (Let's Encrypt's check, only used for a few seconds every two months). See
+[Security and HTTPS](docs/security.md) for port forwarding, your own certificate files and reverse proxies.
 
 With a self-signed certificate the resource pack is served on `web.https.pack-port` (8101) over plain HTTP, because
 Minecraft refuses packs from untrusted certificates; the pack is public and checked by its SHA-1 hash. Open that port

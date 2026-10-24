@@ -8,9 +8,13 @@ Everything is in `plugins/PhotoMaps/config.yml`. Apply changes with `/photomaps 
 |---|---|---|
 | `web.port` | `8100` | port of the web interface |
 | `web.bind` | `0.0.0.0` | address to listen on, `0.0.0.0` means all |
-| `web.public-url` | empty | address the QR codes point to, e.g. `https://photos.example.com:8100`. Empty: `https://<server address>:<port>`, the local network address if `server-ip` is not set |
+| `web.public-url` | empty | address the QR codes point to, e.g. `https://photos.example.com:8100`. Empty: `https://<lets-encrypt domain>:<port>`, else `https://<server address>:<port>` (the local network address if `server-ip` is not set) |
 | `web.https.enabled` | `true` | HTTPS; only turn it off behind a reverse proxy, see [Security and HTTPS](security.md) |
-| `web.https.certificate` | empty | PEM certificate chain, e.g. Let's Encrypt's `fullchain.pem` |
+| `web.https.lets-encrypt.domain` | empty | domain pointing to this server: PhotoMaps gets and renews a Let's Encrypt certificate for it, see [Security and HTTPS](security.md#lets-encrypt-built-in-recommended) |
+| `web.https.lets-encrypt.email` | empty | optional contact address for Let's Encrypt |
+| `web.https.lets-encrypt.challenge-port` | `80` | port that Let's Encrypt's check on port 80 arrives at |
+| `web.https.lets-encrypt.staging` | `false` | untrusted test certificates, for trying out the setup |
+| `web.https.certificate` | empty | PEM certificate chain, e.g. certbot's `fullchain.pem` (wins over `lets-encrypt`) |
 | `web.https.private-key` | empty | PEM private key, e.g. `privkey.pem` |
 | `web.https.keystore` | empty | PKCS#12 key store instead of PEM files |
 | `web.https.keystore-password` | empty | its password |
@@ -58,3 +62,4 @@ back to the built-in texts, so updates never show empty messages.
 | `pictures/<map id>.bin` | the pixels of every picture map (16 KB each, gzipped). Deleting one leaves that map blank |
 | `codes.yml` | the ids of the photo code maps |
 | `tls/self-signed.p12` | the self-signed certificate, recreated when the server's address changes |
+| `tls/lets-encrypt/` | the Let's Encrypt account key and, per domain, `fullchain.pem` and `privkey.pem` |

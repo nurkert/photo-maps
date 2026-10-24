@@ -1,7 +1,6 @@
 package eu.nurkert.photomaps.web;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,7 +25,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
@@ -34,7 +32,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HexFormat;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.net.ssl.KeyManagerFactory;
@@ -198,7 +195,7 @@ public final class Tls {
             byte[] der = Base64.getMimeDecoder().decode(matcher.group(2));
             if (type.equals("RSA PRIVATE KEY")) {
                 // wrap PKCS#1 into PKCS#8: version 0, rsaEncryption, the key as octet string
-                der = seq(integer(BigInteger.ZERO), seq(oid("1.2.840.113549.1.1.1"), tlv(0x05)), tlv(0x04, der));
+                der = Der.seq(Der.integer(BigInteger.ZERO), Der.seq(Der.oid("1.2.840.113549.1.1.1"), Der.tlv(0x05)), Der.tlv(0x04, der));
                 type = "PRIVATE KEY";
             }
             if (type.equals("PRIVATE KEY")) {
@@ -221,25 +218,25 @@ public final class Tls {
     // ------------------------------------------------------------------------------------- self-signed certificate
 
     static X509Certificate createSelfSigned(KeyPair pair, String host) throws GeneralSecurityException {
-        byte[] name = seq(set(seq(oid("2.5.4.3"), tlv(0x0C, "PhotoMaps".getBytes(StandardCharsets.UTF_8)))));
+        byte[] name = Der.commonName("PhotoMaps");
         long now = System.currentTimeMillis();
-        byte[] validity = seq(time(new Date(now - 60_000)), time(new Date(now + VALIDITY_DAYS * 24 * 60 * 60 * 1000)));
-        byte[] algorithm = seq(oid("1.2.840.10045.4.3.2")); // ecdsa-with-SHA256
+        byte[] validity = Der.seq(Der.time(new Date(now - 60_000)), Der.time(new Date(now + VALIDITY_DAYS * 24 * 60 * 60 * 1000)));
+        byte[] algorithm = Der.seq(Der.oid("1.2.840.10045.4.3.2")); // ecdsa-with-SHA256
 
         List<byte[]> alternativeNames = new ArrayList<>();
         alternativeNames.add(sanEntry(host));
         if (!host.equals("localhost")) {
-            alternativeNames.add(tlv(0x82, "localhost".getBytes(StandardCharsets.US_ASCII)));
+            alternativeNames.add(Der.tlv(0x82, "localhost".getBytes(StandardCharsets.US_ASCII)));
         }
-        byte[] extensions = tlv(
+        byte[] extensions = Der.tlv(
                 0xA3,
-                seq(
-                        seq(oid("2.5.29.17"), tlv(0x04, seq(alternativeNames.toArray(byte[][]::new)))),
+                Der.seq(
+                        Der.seq(Der.oid("2.5.29.17"), Der.tlv(0x04, Der.seq(alternativeNames.toArray(byte[][]::new)))),
                         // extended key usage: TLS server
-                        seq(oid("2.5.29.37"), tlv(0x04, seq(oid("1.3.6.1.5.5.7.3.1"))))));
-        byte[] serial = integer(new BigInteger(64, new SecureRandom()).setBit(62));
-        byte[] tbs = seq(
-                tlv(0xA0, integer(BigInteger.TWO)),
+                        Der.seq(Der.oid("2.5.29.37"), Der.tlv(0x04, Der.seq(Der.oid("1.3.6.1.5.5.7.3.1"))))));
+        byte[] serial = Der.integer(new BigInteger(64, new SecureRandom()).setBit(62));
+        byte[] tbs = Der.seq(
+                Der.tlv(0xA0, Der.integer(BigInteger.TWO)),
                 serial,
                 algorithm,
                 name,
@@ -251,10 +248,7 @@ public final class Tls {
         Signature signature = Signature.getInstance("SHA256withECDSA");
         signature.initSign(pair.getPrivate());
         signature.update(tbs);
-        byte[] signed = signature.sign();
-        byte[] bits = new byte[signed.length + 1];
-        System.arraycopy(signed, 0, bits, 1, signed.length);
-        byte[] certificate = seq(tbs, algorithm, tlv(0x03, bits));
+        byte[] certificate = Der.seq(tbs, algorithm, Der.bits(signature.sign()));
         return (X509Certificate) CertificateFactory.getInstance("X.509")
                 .generateCertificate(new ByteArrayInputStream(certificate));
     }
@@ -262,67 +256,11 @@ public final class Tls {
     private static byte[] sanEntry(String host) {
         if (host.matches("[0-9.]+") || host.contains(":")) {
             try {
-                return tlv(0x87, InetAddress.getByName(host).getAddress());
+                return Der.tlv(0x87, InetAddress.getByName(host).getAddress());
             } catch (IOException ignored) {
                 // not an address after all
             }
         }
-        return tlv(0x82, host.getBytes(StandardCharsets.US_ASCII));
-    }
-
-    // a minimal DER writer, enough for one certificate
-
-    private static byte[] time(Date date) {
-        SimpleDateFormat format = new SimpleDateFormat("yyMMddHHmmss'Z'");
-        format.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return tlv(0x17, format.format(date).getBytes(StandardCharsets.US_ASCII));
-    }
-
-    private static byte[] integer(BigInteger value) {
-        return tlv(0x02, value.toByteArray());
-    }
-
-    private static byte[] oid(String dotted) {
-        String[] parts = dotted.split("\\.");
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        out.write(Integer.parseInt(parts[0]) * 40 + Integer.parseInt(parts[1]));
-        for (int i = 2; i < parts.length; i++) {
-            long value = Long.parseLong(parts[i]);
-            int shift = 63 - Long.numberOfLeadingZeros(value | 1);
-            for (int group = shift / 7; group > 0; group--) {
-                out.write((int) (0x80 | (value >> (7 * group)) & 0x7F));
-            }
-            out.write((int) (value & 0x7F));
-        }
-        return tlv(0x06, out.toByteArray());
-    }
-
-    private static byte[] seq(byte[]... parts) {
-        return tlv(0x30, parts);
-    }
-
-    private static byte[] set(byte[]... parts) {
-        return tlv(0x31, parts);
-    }
-
-    static byte[] tlv(int tag, byte[]... parts) {
-        ByteArrayOutputStream content = new ByteArrayOutputStream();
-        for (byte[] part : parts) {
-            content.writeBytes(part);
-        }
-        int length = content.size();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        out.write(tag);
-        if (length < 0x80) {
-            out.write(length);
-        } else {
-            int bytes = (32 - Integer.numberOfLeadingZeros(length) + 7) / 8;
-            out.write(0x80 | bytes);
-            for (int i = bytes - 1; i >= 0; i--) {
-                out.write(length >> (8 * i));
-            }
-        }
-        out.writeBytes(content.toByteArray());
-        return out.toByteArray();
+        return Der.tlv(0x82, host.getBytes(StandardCharsets.US_ASCII));
     }
 }
