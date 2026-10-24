@@ -49,6 +49,19 @@ class LetsEncryptTest {
     }
 
     @Test
+    void renewsWhenAThirdOfTheLifetimeIsLeft() {
+        java.time.Instant start = java.time.Instant.parse("2026-01-01T00:00:00Z");
+        java.time.Instant end90 = start.plus(java.time.Duration.ofDays(90));
+        assertFalse(LetsEncrypt.needsRenewal(start, end90, start.plus(java.time.Duration.ofDays(59))));
+        assertTrue(LetsEncrypt.needsRenewal(start, end90, start.plus(java.time.Duration.ofDays(60))));
+        // a six-day certificate is fine for four days, not renewed every hour
+        java.time.Instant end6 = start.plus(java.time.Duration.ofDays(6));
+        assertFalse(LetsEncrypt.needsRenewal(start, end6, start.plus(java.time.Duration.ofDays(3))));
+        assertTrue(LetsEncrypt.needsRenewal(start, end6, start.plus(java.time.Duration.ofDays(4))));
+        assertTrue(LetsEncrypt.needsRenewal(start, end6, end6.plusSeconds(1)));
+    }
+
+    @Test
     void recognisesAStoredCertificate() throws Exception {
         LetsEncrypt letsEncrypt =
                 new LetsEncrypt(folder.toFile(), "photos.example.com", "", LetsEncrypt.STAGING, "", 80, null);

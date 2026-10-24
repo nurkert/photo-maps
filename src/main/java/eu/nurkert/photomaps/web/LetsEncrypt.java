@@ -42,8 +42,6 @@ public final class LetsEncrypt {
 
     public static final URI PRODUCTION = URI.create("https://acme-v02.api.letsencrypt.org/directory");
     public static final URI STAGING = URI.create("https://acme-staging-v02.api.letsencrypt.org/directory");
-    // renew when less than this is left; Let's Encrypt certificates are valid for 90 days or less
-    private static final Duration RENEW_BEFORE = Duration.ofDays(30);
 
     private final File folder;
     private final String domain;
@@ -93,12 +91,23 @@ public final class LetsEncrypt {
     }
 
     /**
-     * @return whether a certificate for the domain exists and is valid for at least another 30 days
+     * @return whether a certificate for the domain exists and does not need to be renewed yet
      */
     public boolean hasValidCertificate() {
         X509Certificate certificate = certificate();
         return certificate != null
-                && certificate.getNotAfter().toInstant().isAfter(Instant.now().plus(RENEW_BEFORE));
+                && !needsRenewal(
+                        certificate.getNotBefore().toInstant(), certificate.getNotAfter().toInstant(), Instant.now());
+    }
+
+    /**
+     * Renews once less than a third of the lifetime is left, as Let's Encrypt recommends: 30 days before a 90-day
+     * certificate expires, 2 days before a 6-day one. A fixed number of days would renew short-lived certificates
+     * all the time.
+     */
+    static boolean needsRenewal(Instant notBefore, Instant notAfter, Instant now) {
+        Duration lifetime = Duration.between(notBefore, notAfter);
+        return !now.isBefore(notAfter.minus(lifetime.dividedBy(3)));
     }
 
     /**

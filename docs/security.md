@@ -21,12 +21,12 @@ web:
       email: "you@example.com"   # optional
 ```
 
-On the next start (or `/photomaps reload`) PhotoMaps gets a free certificate from
-[Let's Encrypt](https://letsencrypt.org) in the background and switches its web server to it, usually within a
-minute. Until then it uses its self-signed certificate. The certificate is renewed automatically 30 days before it
-expires; nothing has to be restarted. The QR codes point to `https://photos.example.com:8100` unless `web.public-url`
-says otherwise. By setting a domain you accept the
-[Let's Encrypt Subscriber Agreement](https://letsencrypt.org/repository/).
+On the next start (or `/photomaps reload`) PhotoMaps gets a free certificate from [Let's
+Encrypt](https://letsencrypt.org) in the background and switches its web server to it, usually within a minute. Until
+then it uses its self-signed certificate. The certificate is renewed automatically once a third of its lifetime is
+left (30 days before a 90-day certificate expires, also right for Let's Encrypt's shorter certificates); nothing has
+to be restarted. The QR codes point to `https://photos.example.com:8100` unless `web.public-url` says otherwise. By
+setting a domain you accept the [Let's Encrypt Subscriber Agreement](https://letsencrypt.org/repository/).
 
 How Let's Encrypt checks that the domain is yours: it fetches a token from
 `http://photos.example.com/.well-known/acme-challenge/` on **port 80**. PhotoMaps opens
