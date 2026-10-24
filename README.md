@@ -10,6 +10,22 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/nurkert/photo-maps/releases/latest"><img src="https://img.shields.io/github/v/release/nurkert/photo-maps?label=release&color=63B7F0" alt="Latest release"></a>
+  <a href="https://github.com/nurkert/photo-maps/actions/workflows/ci.yml"><img src="https://github.com/nurkert/photo-maps/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/minecraft-1.21.4%2B-4FAE4A" alt="Minecraft 1.21.4+">
+  <img src="https://img.shields.io/badge/java%20%26%20bedrock-supported-4FAE4A" alt="Java and Bedrock">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-555555" alt="License GPL-3.0"></a>
+</p>
+
+<p align="center">
+  <a href="https://nurkert.github.io/photo-maps/">Website</a> ·
+  <a href="https://nurkert.github.io/photo-maps/wiki/">Wiki</a> ·
+  <a href="docs/getting-started.md">Getting started</a> ·
+  <a href="docs/security.md">Security and HTTPS</a> ·
+  <a href="CHANGELOG.md">Changelog</a>
+</p>
+
+<p align="center">
   <img src="images/qr_map.png" alt="The photo code map" width="220">
   <img src="images/web_pick.png" alt="Choosing a picture" width="200">
   <img src="images/web_edit.png" alt="Cutting the picture into maps" width="200">
@@ -102,16 +118,12 @@ All options are explained in [config.yml](src/main/resources/config.yml). Chat t
 | `photomaps.unlimited` | op | uploads cost no empty maps |
 | `photomaps.admin` | op | the commands above |
 
-## Development
+## Documentation
 
-```
-mvn package                               # builds target/PhotoMaps-<version>.jar, runs the tests
-python3 scripts/generate_resourcepack.py  # regenerates textures, packs, Geyser mapping and web sprites
-```
-
-The pixel art (item texture, web interface sprites and background) is generated from code in
-`scripts/generate_resourcepack.py`; commit the generated files. The web interface is plain HTML, CSS and JavaScript
-in `src/main/resources/web`.
+Everything is written down in [docs/](docs) and published as the [wiki](https://nurkert.github.io/photo-maps/wiki/):
+[getting started](docs/getting-started.md), [the web interface](docs/web-interface.md),
+[configuration](docs/configuration.md), [security and HTTPS](docs/security.md), [Bedrock](docs/bedrock.md),
+[commands](docs/commands.md) and [development](docs/development.md) (building, smoke tests, releasing).
 
 ## Credits
 

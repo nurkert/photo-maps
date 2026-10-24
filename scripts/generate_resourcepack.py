@@ -241,6 +241,26 @@ def map_sprite():
     return img
 
 
+def ink_sprite():
+    """An ink pouch for the crafting recipe on the website."""
+    img = canvas()
+    disc(img, 7.5, 9.5, 4.6, (38, 38, 52, 255))
+    rect(img, 6, 3, 9, 5, (38, 38, 52, 255))  # neck
+    rect(img, 5, 2, 10, 2, (70, 70, 90, 255))  # knot
+    disc(img, 6, 8, 1.2, (84, 84, 110, 255))  # shine
+    rect(img, 4, 12, 11, 12, (24, 24, 34, 255))
+    outline(img, (12, 12, 16, 255))
+    return img
+
+
+def empty_map_sprite():
+    img = canvas()
+    rect(img, 1, 1, 14, 14, (226, 212, 170, 255))
+    rect(img, 3, 3, 12, 12, (214, 198, 154, 255))
+    outline(img, (120, 92, 56, 255))
+    return img
+
+
 def background_tile():
     """A dark earthy tile for the page background, random but always the same."""
     rng = random.Random(7)
@@ -259,7 +279,7 @@ def web_art():
     web = ROOT / "src/main/resources/web"
     write(web / "icon.png", png(pixels(QR_CODE), 8))
     for name, sprite in (("camera", camera_sprite), ("selfie", selfie_sprite), ("gallery", gallery_sprite),
-                         ("map", map_sprite)):
+                         ("map", map_sprite), ("ink", ink_sprite), ("empty_map", empty_map_sprite)):
         write(web / f"{name}.png", png(sprite()))
     write(web / "background.png", png(background_tile()))
 

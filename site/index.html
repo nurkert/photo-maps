@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PhotoMaps · Your photos on Minecraft maps</title>
+  <meta name="description" content="Craft a photo code, scan it with your phone and hang your photo on the wall. A Paper and Spigot plugin for Java and Bedrock players.">
+  <meta name="theme-color" content="#1d1610">
+  <meta property="og:title" content="PhotoMaps">
+  <meta property="og:description" content="Craft a photo code, scan it with your phone, hang your photo on the wall.">
+  <meta property="og:image" content="images/web_edit.png">
+  <link rel="icon" href="assets/icon.png">
+  <link rel="preload" href="assets/monocraft.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <header class="bar">
+    <a class="brand shadow" href="./"><img src="assets/icon.png" alt="" width="32" height="32">PhotoMaps</a>
+    <nav class="bar-links">
+      <a class="mc-button small" href="wiki/" data-i18n="wiki">Wiki</a>
+      <a class="mc-button small" href="https://github.com/nurkert/photo-maps">GitHub</a>
+      <button type="button" class="mc-button small" id="language" aria-label="Deutsch / English">DE</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <img class="hero-item" src="assets/icon.png" alt="The photo code item" width="128" height="128">
+      <h1 class="shadow" data-i18n="heroTitle">Your photos on Minecraft maps</h1>
+      <p class="hero-text shadow" data-i18n="heroText">Craft a photo code, scan it with your phone, hang your photo on the wall. For Paper and Spigot, Java and Bedrock.</p>
+      <div class="hero-actions">
+        <a class="mc-button big" href="https://github.com/nurkert/photo-maps/releases/latest" data-i18n="download">Download</a>
+        <a class="mc-button big" href="wiki/getting-started.html" data-i18n="start">Getting started</a>
+      </div>
+      <p class="hero-meta shadow">Minecraft 1.21.4+ · Paper · Spigot · Geyser</p>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title shadow" data-i18n="howTitle">How it works</h2>
+      <ol class="steps">
+        <li class="panel step">
+          <span class="step-number">1</span>
+          <h3 data-i18n="step1Title">Craft a photo code</h3>
+          <div class="crafting" aria-label="Recipe: four ink sacs around an empty map">
+            <span class="grid">
+              <span class="slot"></span><span class="slot"><img src="assets/ink.png" alt="Ink sac"></span><span class="slot"></span>
+              <span class="slot"><img src="assets/ink.png" alt="Ink sac"></span><span class="slot"><img src="assets/empty_map.png" alt="Empty map"></span><span class="slot"><img src="assets/ink.png" alt="Ink sac"></span>
+              <span class="slot"></span><span class="slot"><img src="assets/ink.png" alt="Ink sac"></span><span class="slot"></span>
+            </span>
+            <span class="arrow" aria-hidden="true">&rarr;</span>
+            <span class="slot result"><img src="assets/icon.png" alt="Photo code"></span>
+          </div>
+          <p data-i18n="step1Text">Four ink sacs around an empty map.</p>
+        </li>
+        <li class="panel step">
+          <span class="step-number">2</span>
+          <h3 data-i18n="step2Title">Scan it</h3>
+          <img class="shot qr" src="images/qr_map.png" alt="The map shows a QR code" width="180" height="180">
+          <p data-i18n="step2Text">Right-click it and it becomes a map with a QR code. Scan it with your phone camera.</p>
+        </li>
+        <li class="panel step">
+          <span class="step-number">3</span>
+          <h3 data-i18n="step3Title">Pick a picture</h3>
+          <img class="shot phone" src="images/web_edit.png" alt="The upload page on a phone" width="180">
+          <p data-i18n="step3Text">Take a photo, a selfie or pick one from your gallery. Choose the size, move, zoom and leave squares out.</p>
+        </li>
+        <li class="panel step">
+          <span class="step-number">4</span>
+          <h3 data-i18n="step4Title">Hang it up</h3>
+          <img class="shot phone" src="images/web_done.png" alt="The picture arrived" width="180">
+          <p data-i18n="step4Text">The maps land in your inventory. Put one into a frame and the others hang themselves next to it.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title shadow" data-i18n="featuresTitle">Features</h2>
+      <div class="features">
+        <div class="tooltip-box"><h3 data-i18n="f1Title">Feels like Minecraft</h3><p data-i18n="f1Text">The page on the phone looks like a Minecraft menu: option sliders, buttons, tooltips and toasts.</p></div>
+        <div class="tooltip-box"><h3 data-i18n="f2Title">Java and Bedrock</h3><p data-i18n="f2Text">The photo code has its own texture on both editions. The resource pack and the Geyser mapping install themselves.</p></div>
+        <div class="tooltip-box"><h3 data-i18n="f3Title">Encrypted uploads</h3><p data-i18n="f3Text">HTTPS with TLS 1.2/1.3, Let's Encrypt certificates or a self-signed one, expiring codes and a strict security policy.</p></div>
+        <div class="tooltip-box"><h3 data-i18n="f4Title">Real map colours</h3><p data-i18n="f4Text">Pictures are dithered into the map palette, and the phone shows a preview of exactly how they will look.</p></div>
+        <div class="tooltip-box"><h3 data-i18n="f5Title">Hangs itself</h3><p data-i18n="f5Text">One click on a frame and every part of the picture finds its place, respecting WorldGuard and other protections.</p></div>
+        <div class="tooltip-box"><h3 data-i18n="f6Title">Survival friendly</h3><p data-i18n="f6Text">Every map of a picture costs an empty map. Pictures survive restarts and can be copied like any map.</p></div>
+      </div>
+    </section>
+
+    <section class="section cta">
+      <div class="panel cta-panel">
+        <h2 data-i18n="ctaTitle">Ready to try it?</h2>
+        <p data-i18n="ctaText">Drop the jar into your plugins folder and start the server. No database, no extra web server, no setup for LAN servers.</p>
+        <div class="hero-actions">
+          <a class="mc-button big" href="https://github.com/nurkert/photo-maps/releases/latest" data-i18n="download">Download</a>
+          <a class="mc-button big" href="wiki/" data-i18n="readWiki">Read the wiki</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer shadow"><span data-i18n="footer">PhotoMaps is open source under the GNU GPL v3.0. Not an official Minecraft product, not affiliated with Mojang or Microsoft.</span> · <a href="assets/monocraft-LICENSE.txt">Font: Monocraft (OFL)</a></footer>
+</body>
+</html>
