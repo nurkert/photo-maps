@@ -48,6 +48,25 @@ class LetsEncryptTest {
         assertFalse(letsEncrypt.hasValidCertificate());
     }
 
+    @Test
+    void recognisesAStoredCertificate() throws Exception {
+        LetsEncrypt letsEncrypt =
+                new LetsEncrypt(folder.toFile(), "photos.example.com", "", LetsEncrypt.STAGING, "", 80, null);
+        java.security.KeyPairGenerator generator = java.security.KeyPairGenerator.getInstance("EC");
+        generator.initialize(new java.security.spec.ECGenParameterSpec("secp256r1"));
+        java.security.KeyPair pair = generator.generateKeyPair();
+        X509Certificate certificate = Tls.createSelfSigned(pair, "photos.example.com");
+        Files.createDirectories(letsEncrypt.certificateFile().getParentFile().toPath());
+        Files.writeString(letsEncrypt.certificateFile().toPath(), pem("CERTIFICATE", certificate.getEncoded()));
+        Files.writeString(letsEncrypt.keyFile().toPath(), pem("PRIVATE KEY", pair.getPrivate().getEncoded()));
+        assertTrue(letsEncrypt.hasValidCertificate());
+    }
+
+    private static String pem(String type, byte[] der) {
+        return "-----BEGIN " + type + "-----\n" + java.util.Base64.getMimeEncoder().encodeToString(der)
+                + "\n-----END " + type + "-----\n";
+    }
+
     /**
      * Runs against Pebble, Let's Encrypt's test CA, when it is running: PEBBLE_DIRECTORY (its directory URL), PEBBLE_CA
      * (the CA of its HTTPS endpoint) and PEBBLE_CHALLENGE_PORT (its httpPort). CI starts it; locally see
@@ -67,8 +86,10 @@ class LetsEncryptTest {
 
         letsEncrypt.obtain();
 
-        assertTrue(letsEncrypt.hasValidCertificate());
-        assertNotNull(letsEncrypt.expiry());
+        String stored = Files.readString(letsEncrypt.certificateFile().toPath());
+        assertNotNull(letsEncrypt.expiry(), () -> "unreadable certificate: " + stored);
+        assertTrue(letsEncrypt.keyFile().isFile(), "no key file");
+        assertTrue(letsEncrypt.hasValidCertificate(), () -> "certificate expires " + letsEncrypt.expiry());
         X509Certificate certificate;
         try (InputStream in = Files.newInputStream(letsEncrypt.certificateFile().toPath())) {
             certificate = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(in);
