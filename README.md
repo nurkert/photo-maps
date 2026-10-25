@@ -48,9 +48,12 @@
 4. **Send it**: the parts arrive in your inventory as maps. Put one into an empty item frame on a wall and the other
    parts hang themselves into the empty frames around it, each in its place.
 
-Right-click the code map again to renew it. A code belongs to whoever activated it: copies show other players
-"Not your photo code" instead of the QR code, and cannot be taken over. In survival, every part of a picture costs one
-empty map from your inventory (configurable).
+**One picture per code**: after the upload the code is used up and leaves your inventory; craft a new one for the next
+picture. Right-clicking the code before that gives it a new QR code and makes the old one worthless. A code belongs to
+whoever activated it: copies show other players "Not your photo code" instead of the QR code, and cannot be taken
+over. In survival, every part of a picture costs one empty map from your inventory (configurable).
+
+Hung pictures show no label: their names are item names, which item frames do not display.
 
 Pictures are stored the moment they arrive, before the maps are handed out, and look exactly the same after
 rejoining or restarting the server.
@@ -72,10 +75,13 @@ Pictures travel from the phone to the server, so the web server is locked down:
   by itself, no certbot needed. Your own certificate files work too. Without either, PhotoMaps creates a
   self-signed certificate: just as encrypted, but phones show a warning once. If a certificate cannot be loaded the
   web server stays off rather than falling back to plain HTTP.
-- Every upload page needs an **unguessable token** (96 random bits) that expires after 15 minutes. Addresses that
-  keep guessing tokens are blocked for a minute.
-- Uploads are **checked before they are decoded**: exact pixel size, at most 16 MB, one upload per code at a time.
-  The server dithers the picture itself and never trusts the browser's preview.
+- Only a **valid photo code** can upload: an unguessable token (96 random bits), new on every activation, valid for 15
+  minutes and for **one** picture. Addresses that keep guessing tokens are blocked for a minute.
+- **Only PNG pictures** are accepted, checked by signature and decoded by the PNG decoder only, with exactly the
+  chosen size (checked before decoding) and no bigger than such a picture can be. The upload itself is never stored,
+  only the map colours computed from its pixels, so no hidden payload ends up anywhere.
+- Connections that open and never send anything (port scanners) cannot block the server: each gets its own thread
+  and is closed after 30 seconds.
 - The page runs under a strict **Content Security Policy**, loads nothing from other servers (the font is bundled),
   sends HSTS, `nosniff` and `no-referrer`.
 - Hanging pictures into neighbouring frames asks protection plugins (WorldGuard etc.) about every single frame.

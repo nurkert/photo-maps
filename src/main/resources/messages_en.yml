@@ -19,17 +19,21 @@ map:
   inactive-2: "to activate"
   foreign-1: "Not your"
   foreign-2: "photo code"
+  used-1: "Photo code"
+  used-2: "used up"
 code:
   ready: "Scan the code in your hand with your phone, or open:"
   open-link: "&b&n%url%"
   link-hover: "Open the upload page"
   valid: "&8The code is valid for %minutes% minutes."
   self-signed: "&8Your phone may warn about the certificate once: the connection is still encrypted."
+  used: "&cThis photo code was used up. Craft a new one for the next picture."
   not-yours: "&cThis photo code belongs to someone else. Craft your own."
   no-web: "&cThe web server is not running, ask an admin to check the console."
   no-permission: "&cYou are not allowed to use photo codes."
 upload:
   received: "&aYour picture arrived: %count% map(s) are in your inventory."
+  code-used: "&7Your photo code is used up now. Craft a new one for the next picture."
   dropped: "&eYour inventory is full, the rest lies at your feet."
 frames:
   placed: "&aHung %count% part(s) of the picture."

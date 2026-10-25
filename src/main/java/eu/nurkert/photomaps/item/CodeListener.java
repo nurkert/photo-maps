@@ -76,6 +76,11 @@ public final class CodeListener implements Listener {
             if (view == null) {
                 return;
             }
+            if (plugin.getPictureStore().isUsed(view.getId())) {
+                // one picture per code: craft a new one for the next picture
+                Messages.send(player, "code.used");
+                return;
+            }
             UUID owner = plugin.getPictureStore().codeOwner(view.getId());
             if (owner != null && !owner.equals(player.getUniqueId())) {
                 // a copy of someone else's code: it stays theirs, its QR code is their key

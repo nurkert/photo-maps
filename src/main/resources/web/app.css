@@ -409,6 +409,10 @@ body.dragging .panel {
   text-align: center;
 }
 
+.screen-text.used {
+  color: var(--yellow);
+}
+
 .screen .mc-button {
   max-width: 300px;
 }

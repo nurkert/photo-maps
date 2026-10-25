@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.function.IntFunction;
+import java.util.function.IntPredicate;
 import javax.imageio.ImageIO;
 import org.bukkit.entity.Player;
 import org.bukkit.map.MapCanvas;
@@ -37,6 +38,7 @@ public final class QrRenderer extends MapRenderer {
     private final int mapId;
     private final IntFunction<String> urls;
     private final IntFunction<UUID> owners;
+    private final IntPredicate used;
     private final Palette palette;
     // what each player's canvas currently shows, so it is only drawn again when that changes; keyed like the server
     // keys the canvases, by player object, so a player who rejoins gets drawn on the fresh canvas
@@ -45,12 +47,15 @@ public final class QrRenderer extends MapRenderer {
     /**
      * @param urls the upload page of a photo code map, {@code null} while it has no open session
      * @param owners the owner of a photo code map
+     * @param used whether a photo code map was used up
      */
-    public QrRenderer(int mapId, IntFunction<String> urls, IntFunction<UUID> owners, Palette palette) {
+    public QrRenderer(
+            int mapId, IntFunction<String> urls, IntFunction<UUID> owners, IntPredicate used, Palette palette) {
         super(true);
         this.mapId = mapId;
         this.urls = urls;
         this.owners = owners;
+        this.used = used;
         this.palette = palette;
     }
 
@@ -58,13 +63,16 @@ public final class QrRenderer extends MapRenderer {
     public void render(MapView map, MapCanvas canvas, Player player) {
         UUID owner = owners.apply(mapId);
         boolean mine = player.getUniqueId().equals(owner);
-        String url = mine ? urls.apply(mapId) : null;
-        String state = mine + "|" + url + "|" + Messages.get(player, "map.scan");
+        boolean usedUp = used.test(mapId);
+        String url = mine && !usedUp ? urls.apply(mapId) : null;
+        String state = mine + "|" + usedUp + "|" + url + "|" + Messages.get(player, "map.scan");
         if (Objects.equals(shown.get(player), state)) {
             return;
         }
         shown.put(player, state);
-        if (url != null) {
+        if (usedUp) {
+            drawInactive(canvas, Messages.get(player, "map.used-1"), Messages.get(player, "map.used-2"));
+        } else if (url != null) {
             drawCode(canvas, url, Messages.get(player, "map.scan"));
         } else if (owner != null && !mine) {
             drawInactive(canvas, Messages.get(player, "map.foreign-1"), Messages.get(player, "map.foreign-2"));

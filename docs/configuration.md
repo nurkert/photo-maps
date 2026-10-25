@@ -28,6 +28,7 @@ Everything is in `plugins/PhotoMaps/config.yml`. Apply changes with `/photomaps 
 | `upload.max-columns` | `5` | widest picture, in maps (at most 10) |
 | `upload.max-rows` | `5` | highest picture, in maps (at most 10) |
 | `upload.consume-empty-maps` | `true` | every map of a picture costs one empty map in survival |
+| `upload.single-use` | `true` | one picture per photo code; afterwards the code is used up |
 
 ## Items and the world
 
@@ -62,6 +63,6 @@ back to the built-in texts, so updates never show empty messages.
 | File | |
 |---|---|
 | `pictures/<map id>.bin` | the pixels of every picture map (16 KB each, gzipped), written before the map is handed out. Back them up with the world; deleting one leaves that map blank |
-| `codes.yml` | the photo code maps and who they belong to |
+| `codes.yml` | the photo code maps, who they belong to and which are used up |
 | `tls/self-signed.p12` | the self-signed certificate, recreated when the server's address changes |
 | `tls/lets-encrypt/` | the Let's Encrypt account key and, per domain, `fullchain.pem` and `privkey.pem` |

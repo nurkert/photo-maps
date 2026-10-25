@@ -10,8 +10,8 @@ import java.util.function.LongSupplier;
 
 /**
  * The open upload pages. A session belongs to one player and, if it was opened with a photo code map, to that map,
- * whose QR code points to the session's page. Sessions live in memory only and end after a configurable time;
- * right-clicking the code again opens a new one.
+ * whose QR code points to the session's page. Sessions live in memory only and end after a configurable time or after
+ * their upload; right-clicking the code opens a new one with a new token.
  */
 public final class Sessions {
 
@@ -40,26 +40,31 @@ public final class Sessions {
     }
 
     /**
-     * Opens a session, or extends the session the map already shows if it belongs to the same player (so the QR code
-     * in their hand stays the same). A map shows at most one session.
+     * Opens a session with a fresh token. A map shows at most one session: opening a new one for a map ends the old
+     * one, so an earlier QR code or link stops working at once.
      */
     public synchronized Session open(UUID player, String playerName, int mapId, long durationMillis) {
-        long expiresAt = clock.getAsLong() + durationMillis;
-        Session current = mapId >= 0 ? active(byMap.get(mapId)) : null;
-        Session session;
-        if (current != null && current.player().equals(player)) {
-            session = new Session(current.token(), player, playerName, mapId, expiresAt, current.busy());
-        } else {
-            if (current != null) {
-                byToken.remove(current.token());
+        if (mapId >= 0) {
+            Session old = byMap.remove(mapId);
+            if (old != null) {
+                byToken.remove(old.token());
             }
-            session = new Session(newToken(), player, playerName, mapId, expiresAt, new AtomicBoolean());
         }
+        Session session = new Session(
+                newToken(), player, playerName, mapId, clock.getAsLong() + durationMillis, new AtomicBoolean());
         byToken.put(session.token(), session);
         if (mapId >= 0) {
             byMap.put(mapId, session);
         }
         return session;
+    }
+
+    /** Ends a session, after its picture arrived: its token is worthless from now on. */
+    public synchronized void close(Session session) {
+        byToken.remove(session.token(), session);
+        if (session.mapId() >= 0) {
+            byMap.remove(session.mapId(), session);
+        }
     }
 
     /**

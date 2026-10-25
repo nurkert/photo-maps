@@ -43,6 +43,8 @@ public final class PictureStore implements Listener {
     private final Map<Integer, byte[]> pixels = new ConcurrentHashMap<>();
     // photo code map id -> owner; a code map belongs to whoever activated it, copies of it included
     private final Map<Integer, UUID> codeMaps = new ConcurrentHashMap<>();
+    // photo code maps whose one picture was uploaded
+    private final Set<Integer> usedCodes = ConcurrentHashMap.newKeySet();
     private final QrRenderer.Factory qrRenderers;
 
     public PictureStore(JavaPlugin plugin, QrRenderer.Factory qrRenderers) {
@@ -61,6 +63,7 @@ public final class PictureStore implements Listener {
                 }
             }
         }
+        usedCodes.addAll(codes.getIntegerList("used"));
     }
 
     /**
@@ -148,10 +151,25 @@ public final class PictureStore implements Listener {
             prepare(view);
             view.addRenderer(qrRenderers.create(view.getId()));
         }
+        saveCodes();
+    }
+
+    /** Marks a photo code map as used up: it shows no QR code any more and opens no upload page. */
+    public void markUsed(int mapId) {
+        usedCodes.add(mapId);
+        saveCodes();
+    }
+
+    public boolean isUsed(int mapId) {
+        return usedCodes.contains(mapId);
+    }
+
+    private void saveCodes() {
         YamlConfiguration codes = new YamlConfiguration();
         codeMaps.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> codes.set("owners." + entry.getKey(), entry.getValue().toString()));
+        codes.set("used", usedCodes.stream().sorted().toList());
         try {
             codes.save(codesFile);
         } catch (IOException exception) {

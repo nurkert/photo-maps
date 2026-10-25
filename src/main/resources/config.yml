@@ -50,6 +50,9 @@ upload:
   # Survival: every map of a picture costs one empty map from the player's inventory.
   # Players with photomaps.unlimited and players in creative mode never pay.
   consume-empty-maps: true
+  # One picture per photo code: after the upload the code is used up (it leaves the inventory, copies show "used") and
+  # its link stops working. Craft a new code for the next picture.
+  single-use: true
 
 frames:
   # Clicking an empty item frame with one part of a picture hangs the other parts from your inventory into the

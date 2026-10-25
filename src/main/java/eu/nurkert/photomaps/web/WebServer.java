@@ -20,14 +20,19 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -79,23 +84,25 @@ public final class WebServer {
 
     /**
      * @param error {@code null} on success, else a code the page translates: {@code offline}, {@code maps}
+     * @param usedUp whether the upload used up the photo code, so the page offers no second picture
      */
-    public record Result(String error, int count, int needed, int available) {
+    public record Result(String error, int count, int needed, int available, boolean usedUp) {
 
-        public static Result ok(int count) {
-            return new Result(null, count, 0, 0);
+        public static Result ok(int count, boolean usedUp) {
+            return new Result(null, count, 0, 0, usedUp);
         }
 
         public static Result failure(String error, int needed, int available) {
-            return new Result(error, 0, needed, available);
+            return new Result(error, 0, needed, available, false);
         }
     }
 
     private static final Pattern TOKEN = Pattern.compile("[A-Za-z0-9_-]{16}");
     private static final Pattern PAGE = Pattern.compile("/s/(" + TOKEN.pattern() + ")/?");
     private static final Pattern API = Pattern.compile("/api/(session|upload)/(" + TOKEN.pattern() + ")");
-    // a 10x10 picture is 1280x1280 pixels, about 6.5 MB uncompressed; PNG is never bigger than that by much
-    private static final int MAX_UPLOAD = 16 * 1024 * 1024;
+    // the PNG signature; nothing else is accepted
+    private static final byte[] PNG = {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'};
+    private static final int MAX_THREADS = 200;
     // wrong tokens one address may try per minute before it is blocked for that minute
     private static final int MAX_MISSES = 20;
     private static final String CSP = "default-src 'self'; img-src 'self' blob: data:; style-src 'self'; "
@@ -120,6 +127,10 @@ public final class WebServer {
 
     private record Asset(String type, byte[] content) {}
 
+    static {
+        HttpLimits.apply();
+    }
+
     public WebServer(Logger logger, Sessions sessions, Palette palette, Backend backend, Settings settings) {
         this.logger = logger;
         this.sessions = sessions;
@@ -143,11 +154,7 @@ public final class WebServer {
      */
     public void start(Tls tls) throws IOException {
         Settings current = settings;
-        executor = Executors.newFixedThreadPool(4, runnable -> {
-            Thread thread = new Thread(runnable, "PhotoMaps-Web");
-            thread.setDaemon(true);
-            return thread;
-        });
+        executor = connectionPool();
         https = tls != null;
         if (tls != null) {
             HttpsServer secure = HttpsServer.create(address(current.port()), 0);
@@ -178,6 +185,31 @@ public final class WebServer {
             throw exception;
         }
         server.start();
+    }
+
+    /**
+     * Threads for the connections: as many as needed up to 200, idle ones end after a minute. Connections that open and
+     * never send a request (port scanners) each hold a thread until the request timeout ({@link HttpLimits}) closes
+     * them, so they cannot take the server away from players, as they could with a small fixed pool. Virtual threads
+     * would not help on Java 21: the JDK's TLS code blocks inside {@code synchronized}, which pins them to the few
+     * carrier threads (one per CPU core), so ten hanging connections stopped a ten-core server.
+     */
+    static ExecutorService connectionPool() {
+        AtomicInteger count = new AtomicInteger();
+        return new ThreadPoolExecutor(
+                0,
+                MAX_THREADS,
+                60,
+                TimeUnit.SECONDS,
+                new SynchronousQueue<>(),
+                runnable -> {
+                    Thread thread = new Thread(runnable, "PhotoMaps-Web-" + count.incrementAndGet());
+                    thread.setDaemon(true);
+                    return thread;
+                },
+                // all threads busy (a flood): the connection is left alone and closed by the request timeout, the
+                // JDK's dispatcher thread never sees an exception
+                new ThreadPoolExecutor.DiscardPolicy());
     }
 
     private InetSocketAddress address(int port) {
@@ -339,7 +371,13 @@ public final class WebServer {
             }
             int width = columns * PictureStore.SIZE;
             int height = rows * PictureStore.SIZE;
-            BufferedImage image = decode(readBody(exchange.getRequestBody()), width, height);
+            String type = exchange.getRequestHeaders().getFirst("Content-Type");
+            if (type == null || !type.trim().toLowerCase(Locale.ROOT).startsWith("image/png")) {
+                json(exchange, 415, "{\"error\":\"invalid\"}");
+                return;
+            }
+            byte[] body = readBody(exchange.getRequestBody(), maxUploadSize(width, height));
+            BufferedImage image = decode(body, width, height);
             if (image == null) {
                 json(exchange, 400, "{\"error\":\"invalid\"}");
                 return;
@@ -347,7 +385,7 @@ public final class WebServer {
             byte[] pixels = palette.dither(image.getRGB(0, 0, width, height, null, 0, width), width, height);
             Result result = backend.deliver(session, columns, rows, parts, pixels);
             if (result.error() == null) {
-                json(exchange, 200, "{\"count\":" + result.count() + "}");
+                json(exchange, 200, "{\"count\":" + result.count() + ",\"usedUp\":" + result.usedUp() + "}");
             } else {
                 json(
                         exchange,
@@ -366,11 +404,16 @@ public final class WebServer {
     }
 
     /**
-     * Decodes the picture only if it has exactly the expected size, which is checked before the pixels are read.
+     * Decodes the picture only if it is a PNG of exactly the expected size, which is checked before the pixels are
+     * read. Only the PNG decoder ever sees the data, and the upload itself is never stored: only the map colours computed
+     * from its pixels are.
      */
     static BufferedImage decode(byte[] data, int width, int height) throws IOException {
+        if (data.length < PNG.length || !Arrays.equals(Arrays.copyOf(data, PNG.length), PNG)) {
+            return null;
+        }
         try (ImageInputStream in = ImageIO.createImageInputStream(new ByteArrayInputStream(data))) {
-            Iterator<ImageReader> readers = ImageIO.getImageReaders(in);
+            Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("png");
             if (!readers.hasNext()) {
                 return null;
             }
@@ -381,10 +424,20 @@ public final class WebServer {
                     return null;
                 }
                 return reader.read(0);
+            } catch (IOException | RuntimeException exception) {
+                return null; // broken or crafted file
             } finally {
                 reader.dispose();
             }
         }
+    }
+
+    /**
+     * The largest PNG a picture of this size can sensibly be: 4 bytes per pixel plus room for headers and filters. A
+     * 10x10 picture (1280x1280 pixels) may be about 6.6 MB, a single map 130 KB.
+     */
+    static int maxUploadSize(int width, int height) {
+        return width * height * 4 + height + 64 * 1024;
     }
 
     /**
@@ -431,12 +484,12 @@ public final class WebServer {
 
     private static final class TooLargeException extends IOException {}
 
-    private static byte[] readBody(InputStream in) throws IOException {
+    private static byte[] readBody(InputStream in, int limit) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buffer = new byte[16384];
         int read;
         while ((read = in.read(buffer)) != -1) {
-            if (out.size() + read > MAX_UPLOAD) {
+            if (out.size() + read > limit) {
                 throw new TooLargeException();
             }
             out.write(buffer, 0, read);

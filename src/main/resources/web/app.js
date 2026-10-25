@@ -32,6 +32,7 @@ const TEXTS = {
     doneOne: "In your inventory: 1 map",
     doneMany: "In your inventory: {n} maps",
     doneText: "Put one part into an empty item frame and the others hang themselves next to it.",
+    doneUsed: "Your photo code is used up now. Craft a new one for the next picture.",
     more: "Another picture",
     pictureFor: "Picture for <b>{name}</b>",
     summary: "Maps: <b>{selected}</b>/{total} · {size} px",
@@ -75,6 +76,7 @@ const TEXTS = {
     doneOne: "Im Inventar: 1 Karte",
     doneMany: "Im Inventar: {n} Karten",
     doneText: "Steck einen Teil in einen leeren Rahmen, die anderen hängen sich automatisch daneben.",
+    doneUsed: "Dein Foto-Code ist damit verbraucht. Crafte einen neuen für das nächste Bild.",
     more: "Noch ein Bild",
     pictureFor: "Bild für <b>{name}</b>",
     summary: "Karten: <b>{selected}</b>/{total} · {size} px",
@@ -700,6 +702,15 @@ async function send() {
     const body = await response.json().catch(() => ({}));
     if (response.ok) {
       $("#done-title").textContent = body.count === 1 ? t("doneOne") : t("doneMany", { n: body.count });
+      // one picture per code: the link is worthless now, so there is no second picture
+      $("#done-used").hidden = !body.usedUp;
+      $("#more").hidden = Boolean(body.usedUp);
+      if (body.usedUp) {
+        state.session = null;
+        $("#timer").hidden = true;
+        show("done");
+        return;
+      }
       show("done");
       if (navigator.vibrate) {
         navigator.vibrate(30);

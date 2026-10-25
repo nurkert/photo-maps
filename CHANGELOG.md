@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.2 (2026-10-25)
+
+- Fixed: the web server stopped answering after a while on public servers. Port scanners open connections and never
+  send a request; four of them blocked all of its threads for good. Every connection now gets its own thread and
+  unfinished requests are closed after 30 seconds.
+- One picture per photo code: after the upload the code is used up, leaves the inventory and its link stops working.
+  `upload.single-use: false` brings back unlimited uploads.
+- Every right-click on a photo code makes a new QR code; the old link stops working at once.
+- Only PNG uploads are accepted (content type, signature, PNG decoder only), no bigger than a picture of the chosen
+  size can be. The upload is never stored, only the map colours computed from it.
+- Pictures in item frames show no label any more. Pictures hung with earlier versions lose theirs when their area
+  loads; names given on an anvil stay.
+
 ## 1.0.1 (2026-10-24)
 
 - The resource pack now comes from the GitHub release, like PorticleGun's. Before, it came from the plugin's own web

@@ -102,18 +102,32 @@ If the configured certificate cannot be loaded, the web server stays off instead
 
 ## Access
 
-- Every upload page is reachable only through its **token**: 96 random bits, impossible to guess, and valid for
-  `upload.session-minutes` (15). A page belongs to the player who right-clicked the code.
+- Only a valid photo code can upload. Every upload page is reachable only through its **token**: 96 random bits,
+  impossible to guess, valid for `upload.session-minutes` (15) and for **one** picture (`upload.single-use`). A page
+  belongs to the player who right-clicked the code.
+- Every right-click on the code makes a **new token**; the old link stops working at once. After the upload the token
+  is gone and the code is used up.
 - An address that asks for more than 20 unknown tokens within a minute is blocked for the rest of that minute.
 - Only players with `photomaps.use` can open upload pages.
 
 ## Uploads
 
-- The page sends a PNG of exactly the chosen size (128 x 128 pixels per map). The server reads the size from the file
-  header and rejects anything else **before decoding** it; uploads are limited to 16 MB.
-- One upload per code at a time.
+- **Only PNG**: the upload must be sent as `image/png`, start with the PNG signature and is decoded by the PNG
+  decoder only; no other image format or file type ever reaches a decoder.
+- It must have exactly the chosen size (128 x 128 pixels per map). The server reads the size from the file header and
+  rejects anything else **before decoding** it, and refuses uploads bigger than a PNG of that size can be.
+- **The upload is never stored.** The server keeps only the map colours it computes from the pixels (one byte per
+  pixel), so nothing hidden in the file ends up on disk or in the game.
+- One upload per code at a time, and one per code at all.
 - The server converts the picture into map colours itself; nothing the browser computes is trusted.
 - Maps are only created on the main server thread, after the player's empty maps were checked.
+
+## Connections
+
+The web server gives every connection its own thread (up to 200) and closes requests that are not complete after 30
+seconds and responses not sent after 60. Port scanners on a public port open connections and never send anything; they
+cannot block the server for players. The timeouts are the JDK's `sun.net.httpserver.maxReqTime` and `maxRspTime`;
+values set with `-D` options win.
 
 ## The page
 

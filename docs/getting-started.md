@@ -44,8 +44,11 @@ Admins can hand them out with `/photomaps give`.
 3. **Choose a picture**: take a photo, a selfie, or pick one from your gallery. See [The web interface](web-interface.md).
 4. **Send it.** The parts arrive in your inventory as maps.
 
-The code stays valid for 15 minutes (configurable); right-click it again to renew it. The same code can be used for
-many pictures.
+**One picture per code.** After the upload the code is used up: it leaves your inventory, and its link stops working.
+Craft a new code for the next picture (admins can turn this off with `upload.single-use: false`).
+
+Before that, the code stays valid for 15 minutes (configurable). Right-clicking it gives it a new QR code; the old one
+stops working at once.
 
 A code belongs to the player who activated it. Copies of the map (in item frames, from a cartography table) show
 everyone else "Not your photo code" instead of the QR code, because the QR code is the key to your upload page, and

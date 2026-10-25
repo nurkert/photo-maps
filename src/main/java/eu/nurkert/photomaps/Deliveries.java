@@ -15,6 +15,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.map.MapView;
 
 /**
@@ -111,8 +112,33 @@ final class Deliveries implements WebServer.Backend {
         if (dropped) {
             Messages.send(player, "upload.dropped");
         }
+        boolean usedUp = plugin.getSettings().singleUse();
+        if (usedUp) {
+            useUp(player, session);
+        }
         player.playSound(player.getLocation(), Sound.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, 1, 1);
-        return WebServer.Result.ok(maps.size());
+        return WebServer.Result.ok(maps.size(), usedUp);
+    }
+
+    /**
+     * One picture per photo code: the session ends, so its link is worthless, and the code map is used up. It leaves
+     * the player's inventory; copies elsewhere show that it was used.
+     */
+    private void useUp(Player player, Sessions.Session session) {
+        plugin.getSessions().close(session);
+        if (session.mapId() < 0) {
+            return;
+        }
+        plugin.getPictureStore().markUsed(session.mapId());
+        PlayerInventory inventory = player.getInventory();
+        for (int slot = 0; slot < inventory.getSize(); slot++) {
+            ItemStack item = inventory.getItem(slot);
+            MapView view = PhotoItems.view(item);
+            if (plugin.getItems().isCodeMap(item) && view != null && view.getId() == session.mapId()) {
+                inventory.setItem(slot, null);
+            }
+        }
+        Messages.send(player, "upload.code-used");
     }
 
     private boolean pays(Player player) {

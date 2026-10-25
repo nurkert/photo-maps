@@ -40,6 +40,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class LetsEncrypt {
 
+    static {
+        HttpLimits.apply();
+    }
+
     public static final URI PRODUCTION = URI.create("https://acme-v02.api.letsencrypt.org/directory");
     public static final URI STAGING = URI.create("https://acme-staging-v02.api.letsencrypt.org/directory");
 

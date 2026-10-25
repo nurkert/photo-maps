@@ -16,6 +16,9 @@ import org.bukkit.plugin.java.JavaPlugin;
  * Creates and recognises the items of PhotoMaps. Items are recognised by markers in their persistent data, never by
  * name or lore.
  *
+ * <p>Names are item names, not custom names: they look the same in the inventory, but item frames show only custom
+ * names above the item, so a picture on the wall carries no label.
+ *
  * <ul>
  *   <li>Photo code: paper with the item model {@code photomaps:qr_code} from the resource pack (Java) or the Geyser
  *       mapping (Bedrock). Right-clicking it turns it into a photo code map.
@@ -72,7 +75,7 @@ public final class PhotoItems {
         ItemMeta meta = item.getItemMeta();
         meta.getPersistentDataContainer().set(codeKey, PersistentDataType.BYTE, (byte) 1);
         meta.setItemModel(model);
-        meta.setDisplayName(Messages.get(viewer, "item.name"));
+        meta.setItemName(Messages.get(viewer, "item.name"));
         meta.setLore(Messages.list(viewer, "item.lore"));
         item.setItemMeta(meta);
         return item;
@@ -83,7 +86,7 @@ public final class PhotoItems {
         MapMeta meta = (MapMeta) item.getItemMeta();
         meta.setMapView(view);
         meta.getPersistentDataContainer().set(codeMapKey, PersistentDataType.BYTE, (byte) 1);
-        meta.setDisplayName(Messages.get(viewer, "item.map-name"));
+        meta.setItemName(Messages.get(viewer, "item.map-name"));
         meta.setLore(Messages.list(viewer, "item.map-lore"));
         item.setItemMeta(meta);
         return item;
@@ -96,7 +99,7 @@ public final class PhotoItems {
         meta.getPersistentDataContainer().set(partKey, PersistentDataType.STRING, part.encode());
         int number = part.row() * part.columns() + part.column() + 1;
         int count = part.columns() * part.rows();
-        meta.setDisplayName(Messages.get(
+        meta.setItemName(Messages.get(
                 viewer, "item.picture-name", "id", part.picture(), "part", number, "parts", count));
         if (count > 1) {
             meta.setLore(Messages.list(
@@ -104,6 +107,38 @@ public final class PhotoItems {
         }
         item.setItemMeta(meta);
         return item;
+    }
+
+    /**
+     * Picture parts made before 1.0.2 had a custom name, which item frames show above the picture. Turns the name the
+     * plugin gave into an item name; a name a player gave on an anvil stays.
+     *
+     * @return whether the item changed
+     */
+    public boolean dropFrameLabel(ItemStack item) {
+        Part part = part(item);
+        if (part == null || !item.getItemMeta().hasDisplayName()) {
+            return false;
+        }
+        ItemMeta meta = item.getItemMeta();
+        String name = meta.getDisplayName();
+        int number = part.row() * part.columns() + part.column() + 1;
+        boolean ours = Messages.inAllLanguages(
+                        "item.picture-name",
+                        "id",
+                        part.picture(),
+                        "part",
+                        number,
+                        "parts",
+                        part.columns() * part.rows())
+                .contains(name);
+        if (!ours) {
+            return false;
+        }
+        meta.setDisplayName(null);
+        meta.setItemName(name);
+        item.setItemMeta(meta);
+        return true;
     }
 
     public boolean isCode(ItemStack item) {

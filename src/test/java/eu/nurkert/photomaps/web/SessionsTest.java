@@ -34,13 +34,20 @@ class SessionsTest {
     }
 
     @Test
-    void reopeningByTheSamePlayerKeepsTheCode() {
+    void reopeningGivesANewCodeAndEndsTheOldOne() {
         Sessions.Session first = sessions.open(alex, "Alex", 7, 1_000);
-        now.addAndGet(900);
         Sessions.Session second = sessions.open(alex, "Alex", 7, 1_000);
-        assertEquals(first.token(), second.token());
-        now.addAndGet(500);
-        assertEquals(second, sessions.get(first.token()));
+        assertNotEquals(first.token(), second.token());
+        assertNull(sessions.get(first.token()));
+        assertEquals(second, sessions.forMap(7));
+    }
+
+    @Test
+    void closedSessionsAreGone() {
+        Sessions.Session session = sessions.open(alex, "Alex", 7, 1_000);
+        sessions.close(session);
+        assertNull(sessions.get(session.token()));
+        assertNull(sessions.forMap(7));
     }
 
     @Test

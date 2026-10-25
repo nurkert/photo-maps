@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -72,6 +73,15 @@ public final class Messages {
             text = key;
         }
         return colour(replace(text, replacements));
+    }
+
+    /** The text in every language, e.g. to recognise a name the plugin gave in any of them. */
+    public static List<String> inAllLanguages(String key, Object... replacements) {
+        return LANGUAGES.stream()
+                .map(language -> bundles.get(language).getString(key))
+                .filter(Objects::nonNull)
+                .map(text -> colour(replace(text, replacements)))
+                .toList();
     }
 
     public static List<String> list(CommandSender sender, String key, Object... replacements) {

@@ -3,6 +3,7 @@ package eu.nurkert.photomaps;
 import eu.nurkert.photomaps.command.PhotoMapsCommand;
 import eu.nurkert.photomaps.item.CodeListener;
 import eu.nurkert.photomaps.item.FrameListener;
+import eu.nurkert.photomaps.item.LabelMigration;
 import eu.nurkert.photomaps.item.PhotoItems;
 import eu.nurkert.photomaps.item.RecipeListener;
 import eu.nurkert.photomaps.map.Palette;
@@ -77,7 +78,9 @@ public final class PhotoMaps extends JavaPlugin {
         sessions = new Sessions();
         // the lambda reads the field when a renderer is made, after it was assigned
         pictures = new PictureStore(
-                this, mapId -> new QrRenderer(mapId, this::urlForMap, id -> pictures.codeOwner(id), palette));
+                this,
+                mapId -> new QrRenderer(
+                        mapId, this::urlForMap, id -> pictures.codeOwner(id), id -> pictures.isUsed(id), palette));
         recipe = new RecipeListener(this, items);
 
         var plugins = getServer().getPluginManager();
@@ -85,6 +88,7 @@ public final class PhotoMaps extends JavaPlugin {
         plugins.registerEvents(recipe, this);
         plugins.registerEvents(new CodeListener(this), this);
         plugins.registerEvents(new FrameListener(this), this);
+        plugins.registerEvents(new LabelMigration(items), this);
         PhotoMapsCommand command = new PhotoMapsCommand(this);
         getCommand("photomaps").setExecutor(command);
         getCommand("photomaps").setTabCompleter(command);
@@ -406,6 +410,10 @@ public final class PhotoMaps extends JavaPlugin {
 
     public PhotoItems getItems() {
         return items;
+    }
+
+    public Sessions getSessions() {
+        return sessions;
     }
 
     public PictureStore getPictureStore() {
